@@ -40,8 +40,7 @@ Na obrázku můžme vidět pomocí kterých pinů (SPI sběrnice) je k IC připo
 
 Teplota je jednou ze základních veličin SI soustavy, její jednotka je [K]. V našich končinách se spíše setkáme s jednoutkou stpeň Celsia [°C], která je odvozena od trojného bodu vody. Přepočet mezi těmito jednotkami je velice snadný:
 
-
-$e^{i \pi} = -1$
+![obr](https://latex.codecogs.com/gif.latex?%5Cinline%20T_%7BC%7D%20%3D%20T_%7BK%7D%20-%20273%2C15)
 
 Teplotní čidlo slouží k eletrickému měření teploty, jeho hlavním úkolem je převod okolní teploty na nějakou elektrickou veličinu (odpor, poud, napětí). Čidla můžeme dělit podle mnoha faktorů asi nejzásadnější z nich je jestli je čidlo dotykové nebo ne. V naší aplikaci by bezdotykoké čidlo nemělo smysl, stejně tak by nemělo smysl se tu zaobýrat čidly, které nejsou elektrická, proto se dále zaměřím pouze na dělení dotykových elektrických čidel.  
 
