@@ -38,7 +38,25 @@ Na obrázku můžme vidět pomocí kterých pinů (SPI sběrnice) je k IC připo
 
 ##### Rozbor problematiky
 
-~~Teplotní čidlo slouží k eletrickému měření teploty, jeho hlavním úkolem je převod okolní teploty na nějakou elektrickou veličinu (odpor, poud, napětí). Čidla~~
+Teplota je jednou ze základních veličin SI soustavy, její jednotka je [K]. V našich končinách se spíše setkáme s jednoutkou stpeň Celsia [°C], která je odvozena od trojného bodu vody. Přepočet mezi těmito jednotkami je velice snadný:
+
+
+$e^{i \pi} = -1$
+
+Teplotní čidlo slouží k eletrickému měření teploty, jeho hlavním úkolem je převod okolní teploty na nějakou elektrickou veličinu (odpor, poud, napětí). Čidla můžeme dělit podle mnoha faktorů asi nejzásadnější z nich je jestli je čidlo dotykové nebo ne. V naší aplikaci by bezdotykoké čidlo nemělo smysl, stejně tak by nemělo smysl se tu zaobýrat čidly, které nejsou elektrická, proto se dále zaměřím pouze na dělení dotykových elektrických čidel.  
+
+##### Eleketrická dotykové čidla:
+
+* Odporová kovová
+* Odporová polovodičová
+* Termoelektrická
+* Polovodičová s NP přechodem
+
+
+##### Citace
+
+* http://skriptum.wz.cz/autom/teplota.htm
+
 
 #### IoT cloudové sluby
 
@@ -57,6 +75,8 @@ Na obrázku můžme vidět pomocí kterých pinů (SPI sběrnice) je k IC připo
 * https://www.datadoghq.com/product/
 * https://www.ixon.cloud/iiot-platform
 * https://www.bevywise.com/iot-platform/
+
+
 
 ##### Citace
 
