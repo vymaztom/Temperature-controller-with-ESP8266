@@ -34,6 +34,14 @@ Na obrázku můžme vidět pomocí kterých pinů (SPI sběrnice) je k IC připo
 ![ESP-12E PINOUT](Image/ESP-12E_PINOUT.png)
 *!Na obrázku můžete vidět ESP-12E to se od ESP-12F liší pouze tvarem antény*
 
+
+| **GPIO15**<br>**(MTDO)** | **GPIO0** | **GPIO2** | **Mode** | **Comment** |
+| :-: | :-: | :-: | :-: | :-: |
+|L| H | H | Flash | Boot form SPI Flash |
+|L| L | H | UART  | Programing by UART  |
+|H| X | X | SDIO  | Boot form SD-card   |
+
+
 #### Výběr vhodného teplotního čidla
 
 ##### Rozbor problematiky
