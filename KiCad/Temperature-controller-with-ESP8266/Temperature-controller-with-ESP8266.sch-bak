@@ -1492,7 +1492,7 @@ U 1 1 5FBF0BC9
 P 7650 1650
 F 0 "H5" V 7604 1800 50  0000 L CNN
 F 1 "MountingHole_Pad" V 7695 1800 50  0001 L CNN
-F 2 "Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical" H 7650 1650 50  0001 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_1x01_P2.00mm_Vertical" H 7650 1650 50  0001 C CNN
 F 3 "~" H 7650 1650 50  0001 C CNN
 	1    7650 1650
 	-1   0    0    1   
@@ -1503,7 +1503,7 @@ U 1 1 5FBF137B
 P 7900 1650
 F 0 "H6" V 7854 1800 50  0000 L CNN
 F 1 "MountingHole_Pad" V 7945 1800 50  0001 L CNN
-F 2 "Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical" H 7900 1650 50  0001 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_1x01_P2.00mm_Vertical" H 7900 1650 50  0001 C CNN
 F 3 "~" H 7900 1650 50  0001 C CNN
 	1    7900 1650
 	-1   0    0    1   
@@ -1518,7 +1518,7 @@ U 1 1 5FC11A54
 P 8150 1650
 F 0 "H8" V 8104 1800 50  0000 L CNN
 F 1 "MountingHole_Pad" V 8195 1800 50  0001 L CNN
-F 2 "Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical" H 8150 1650 50  0001 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_1x01_P2.00mm_Vertical" H 8150 1650 50  0001 C CNN
 F 3 "~" H 8150 1650 50  0001 C CNN
 	1    8150 1650
 	-1   0    0    1   
@@ -1535,7 +1535,7 @@ U 1 1 5FC2DF77
 P 7400 1650
 F 0 "H7" V 7354 1800 50  0000 L CNN
 F 1 "MountingHole_Pad" V 7445 1800 50  0001 L CNN
-F 2 "Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical" H 7400 1650 50  0001 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_1x01_P2.00mm_Vertical" H 7400 1650 50  0001 C CNN
 F 3 "~" H 7400 1650 50  0001 C CNN
 	1    7400 1650
 	-1   0    0    1   

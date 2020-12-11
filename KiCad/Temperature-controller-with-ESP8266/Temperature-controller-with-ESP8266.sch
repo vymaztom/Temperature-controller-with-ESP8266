@@ -568,19 +568,6 @@ F 3 "" H 3300 3400 50  0001 C CNN
 	1    3300 3400
 	1    0    0    -1  
 $EndComp
-$Comp
-L power:GND #PWR022
-U 1 1 5FB16CF7
-P 3400 4750
-F 0 "#PWR022" H 3400 4500 50  0001 C CNN
-F 1 "GND" H 3405 4577 50  0000 C CNN
-F 2 "" H 3400 4750 50  0001 C CNN
-F 3 "" H 3400 4750 50  0001 C CNN
-	1    3400 4750
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3400 4750 3400 4600
 Text GLabel 3200 4100 0    50   Input ~ 0
 BUTTON
 Text GLabel 3800 2200 2    50   Input ~ 0
@@ -1443,7 +1430,7 @@ Text Notes 5900 4650 0    50   ~ 0
 CONNECTORS
 Wire Notes Line
 	500  5200 5800 5200
-Text Notes 600  5400 0    50   ~ 0
+Text Notes 650  5400 0    50   ~ 0
 USB TO UART
 Wire Notes Line
 	5800 2050 11200 2050
