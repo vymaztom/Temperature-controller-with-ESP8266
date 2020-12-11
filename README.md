@@ -91,3 +91,26 @@ Teplotní čidlo slouží k eletrickému měření teploty, jeho hlavním úkole
 * LinuxDays - 3.10.2020 - IoT domov aneb pozvěte si zloděje domů (Petr Šrámek)
 * LinuxDays - 3.10.2020 - PiHome - automatizace domácnosti s OpenHAB běžící na Raspberry Pi & Arduino (Michal Novotný)
 * LinuxDays - 10.10.2015 - MQTT, protokol pro IoT (Adam Hořčica)
+
+#### CITACE 2
+
+[a1] https://dspace.vutbr.cz/bitstream/handle/11012/17665/final-thesis.pdf?sequence=6
+[a2] http://remaxcz.com/old/katalog/snimace/teplota/kl/char/Pt100.pdf
+[a4] 
+[a5] http://www.ferity.cz/termistory/negohm.pdf
+[a6]https://vyvoj.hw.cz/teorie-a-praxe/dokumentace/mereni-teploty-polovodicove-odporove-senzory-teploty.html
+[a7] https://cdn.sparkfun.com/datasheets/Sensors/Temp/DS18B20.pdf
+[a8] http://robotchip.ru/download/datasheet/AM2302-Datasheet.pdf
+[a9] Měření teploty termočlánky. Www.vutbr.cz [online]. [cit. 2017-05-07]. Dostupné z: https://www.vutbr.cz/www_base/zav_prace_soubor_verejne.php?file_id=53351
+[a10] https://www.vutbr.cz/www_base/zav_prace_soubor_verejne.php?file_id=149118
+[a11] 
+[a12] https://thingspeak.com/pages/license_faq
+[a13] Portál TMEP.cz: Mapa čidel [online]. [cit. 2020-12-06]. Dostupné z: https://tmep.cz/mapa/
+[a14] https://www.myopenhab.org/
+[a15] https://www.iso.org/standard/69466.html
+[a16] https://blogs.mathworks.com/loren/2016/03/23/explore-your-iot-data-with-thingspeak-and-matlab/
+[a17] https://escapequotes.net/esp8266-wemos-d1-mini-pins-and-diagram/
+[a18] https://jlcpcb.com/
+[a19] https://www.kondik.cz/olovnata-a-bezolovnata-pajka
+
+
