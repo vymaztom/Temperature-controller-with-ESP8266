@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ESPAsyncTCP.h>
 #include <vector>
+#include "ProjectConfig.h"
 
 #define TCP_TELNET_PORT 23
 

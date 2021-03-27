@@ -1,19 +1,5 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <stdint.h>
-#include "eeprom_M24512.h"
+#include "EEPROM_M24512.h"
 
-
-config_t* create_config(){
-	config_t* one = (config_t*)malloc(sizeof(config_t));
-	one->name = (char*)malloc(sizeof(char)*MAXSIZEOFNAMEDEVICE);
-	one->ssid = (char*)malloc(sizeof(char)*MAXSIZESSID);
-	one->password = (char*)malloc(sizeof(char)*MAXSIZEWPA2PASSWORD);
-	one->ip = (uint8_t*)malloc(sizeof(uint8_t)*4);
-	one->mask = (uint8_t*)malloc(sizeof(uint8_t)*4);
-	one->gateway = (uint8_t*)malloc(sizeof(uint8_t)*4);
-	return one;
-}
 
 
 /******************************************************************************
@@ -22,143 +8,168 @@ config_t* create_config(){
 
 *******************************************************************************/
 
+EEPROM_M24512::EEPROM_M24512(){}
+
+
+// begin function call I2C myWire begin
+void EEPROM_M24512::begin(){
+	myWire.setClock(M24512_CLOCK);
+	myWire.begin(PIN_SDA, PIN_SCL);
+
+}
+
+// Print page from EEPROM MEMORY
+void EEPROM_M24512::printPageMemory(uint16_t pageNumber){
+	if(pageNumber < M24512_MAX_PAGES){
+		uint16_t addr = pageNumber*M24512_PAGE_SIZE;
+		myWire.beginTransmission(M24512_ADR);
+		myWire.write(addr >> 8);
+		myWire.write(addr & 0xFF);
+		myWire.endTransmission();
+		myWire.requestFrom(M24512_ADR, M24512_PAGE_SIZE);
+		uint8_t position = 0;
+		Serial.printf("PRINT EEPROM PAGE no. %u\n", pageNumber);
+		while(myWire.available()){
+			uint8_t one = myWire.read();
+			Serial.printf("0x%02X,", one);
+			if((one >= 32) && (one <= 126)){
+				Serial.printf("(%3c)", one);
+			}else{
+				Serial.printf("(%3u)", one);
+			}
+			position++;
+			if(position%M24512_PAGE_PRINT_LENGHT == 0){
+				Serial.printf("\n");
+			}
+		}
+	}
+}
+
+
 // read data by address from M24512
-uint8_t M24512_read_byte(uint16_t addr){
-	Wire.beginTransmission(M24512_ADR);
-	Wire.write(addr >> 8);
-	Wire.write(addr & 0xFF);
-	Wire.endTransmission();
-	Wire.requestFrom(M24512_ADR, 1);
-	if(Wire.available() == 1){
-		return Wire.read();
+uint8_t EEPROM_M24512::M24512_read_byte(uint16_t addr){
+	myWire.beginTransmission(M24512_ADR);
+	myWire.write(addr >> 8);
+	myWire.write(addr & 0xFF);
+	myWire.endTransmission();
+	myWire.requestFrom(M24512_ADR, 1);
+	if(myWire.available() == 1){
+		return myWire.read();
 	}
 	return 0xF;
 }
 
-
-// write data at address into M24512
-void M24512_write_byte(uint16_t addr, uint8_t data){
-	Wire.beginTransmission(M24512_ADR);
-	Wire.write(addr >> 8);
-	Wire.write(addr & 0xFF);
-	Wire.write(data);
-	Wire.endTransmission();
-	delay(10);
-}
-
-/******************************************************************************
-
-				FUNCTIONS FOR SAVE AND LOAD CONFIG STRUCTURE
-
-******************************************************************************/
-
-// simple read uint8_t array from eeprom
-void EEPROMread(uint8_t* _ret_data, uint8_t size, uint16_t addr){
-	for(uint8_t i = 0; i < size; i++){
-		_ret_data[i] = M24512_read_byte(addr + i);
+// read data by address from M24512
+char* EEPROM_M24512::M24512_read_byte(uint16_t addr, uint8_t size){
+	myWire.beginTransmission(M24512_ADR);
+	myWire.write(addr >> 8);
+	myWire.write(addr & 0xFF);
+	myWire.endTransmission();
+	myWire.requestFrom((int)M24512_ADR, (int)size);
+	char* ret = (char*) malloc(sizeof(char)*(size+1));
+	uint8_t position = 0;
+	while(myWire.available()){
+		char c = myWire.read();
+		ret[position] = c;
+		position++;
 	}
-}
-
-// simple write uint8_t into eeprom
-void EEPROMwrite(uint8_t* _data, uint8_t size, uint16_t addr){
-	for(uint8_t i = 0; i < size; i++){
-		M24512_write_byte(addr + i, _data[i]);
-	}
-}
-
-// simple read char array from eeprom
-void EEPROMread(char* _ret_data, uint8_t size, uint16_t addr){
-	for(uint8_t i = 0; i < size; i++){
-		_ret_data[i] = (char)M24512_read_byte(addr + i);
-	}
-}
-
-// simple write uint8_t into eeprom
-void EEPROMwrite(char* _data, uint8_t size, uint16_t addr){
-	for(uint8_t i = 0; i < size; i++){
-		M24512_write_byte(addr + i, (uint8_t)_data[i]);
-	}
-}
-
-
-// write structure into eeprom
-config_t* read_config_eeprom(){
-	config_t* ret = create_config();
-	uint16_t addr = 0;
-	EEPROMread(ret->name, MAXSIZEOFNAMEDEVICE, addr);
-	addr += MAXSIZEOFNAMEDEVICE;
-	EEPROMread(ret->ssid, MAXSIZESSID, addr);
-	addr += MAXSIZESSID;
-	EEPROMread(ret->password, MAXSIZEWPA2PASSWORD, addr);
-	addr += MAXSIZEWPA2PASSWORD;
-	EEPROMread(ret->ip, 4, addr);
-	addr += 4;
-	EEPROMread(ret->mask, 4, addr);
-	addr += 4;
-	EEPROMread(ret->gateway, 4, addr);
+	ret[position] = '\0';
 	return ret;
 }
 
-// read strucure from eeprom
-void write_config_eeprom(config_t* conf){
-	uint16_t addr = 0;
-	EEPROMwrite(conf->name, MAXSIZEOFNAMEDEVICE, addr);
-	addr += MAXSIZEOFNAMEDEVICE;
-	EEPROMwrite(conf->ssid, MAXSIZESSID, addr);
-	addr += MAXSIZESSID;
-	EEPROMwrite(conf->password, MAXSIZEWPA2PASSWORD, addr);
-	addr += MAXSIZEWPA2PASSWORD;
-	EEPROMwrite(conf->ip, 4, addr);
-	addr += 4;
-	EEPROMwrite(conf->mask, 4, addr);
-	addr += 4;
-	EEPROMwrite(conf->gateway, 4, addr);
+// write data at address into M24512
+void EEPROM_M24512::M24512_write_byte(uint16_t addr, uint8_t data){
+	myWire.beginTransmission(M24512_ADR);
+	myWire.write(addr >> 8);
+	myWire.write(addr & 0xFF);
+	myWire.write(data);
+	myWire.endTransmission();
+	delay(10);
 }
 
+void EEPROM_M24512::M24512_write_byte(uint16_t addr, char* data){
+	uint8_t len = strlen(data);
+	Serial.printf(">>>>>>>>>>>>> WriteStringEEPROM %s LEN: %u\n", data, len);
+	Serial.printf(">>>>>>>>>>>>>>>>> NEW addr: %u\n", addr);
+	uint8_t pos = 0;
+	while(pos < len){
+		uint8_t diff = M24512_PAGE_SIZE - (addr%M24512_PAGE_SIZE);
+		uint8_t miss = len-pos;
+		Serial.printf(">>>>>>>>>>>>>>>>> DIFF: %u\n", diff);
+		Serial.printf(">>>>>>>>>>>>>>>>> MISS: %u\n", miss);
+		if(miss > diff){
+			miss = diff;
+		}
+		myWire.beginTransmission(M24512_ADR);
+		myWire.write(addr >> 8);
+		myWire.write(addr & 0xFF);
+		myWire.write((uint8_t*)(data+pos), miss);
+		myWire.endTransmission();
+		delay(10);
+		pos += miss;
+		addr += miss;
+		Serial.printf(">>>>>>>>>>>>>>>>> NEW pos : %u\n", pos);
+		Serial.printf(">>>>>>>>>>>>>>>>> NEW addr: %u\n", addr);
+	}
+}
 
-/*******************************************************************************
+// save data from structure into EEPROM
+uint16_t EEPROM_M24512::M24512_saveLList(uint16_t offset, LList& list){
+	uint16_t addr = offset;
+	M24512_write_byte(addr, list.getSize());
+	addr++;
+	if(DEBUG){
+		Serial.printf("Save> size: %u\n", list.getSize());
+	}
+	for(uint8_t i = 0 ; i <= list.getMaxIndex() ; i++){
+		note_t* one = list.get_note(i);
+		if(one != NULL){
+			M24512_write_byte(addr, one->index);
+			addr++;
 
-							dEBUG FUNCTIONS
+			M24512_write_byte(addr, (uint8_t)strlen(one->value1));
+			addr++;
+			M24512_write_byte(addr, one->value1);
+			addr += strlen(one->value1);
 
-*******************************************************************************/
+			M24512_write_byte(addr, (uint8_t)strlen(one->value2));
+			addr++;
+			M24512_write_byte(addr, one->value2);
+			addr += strlen(one->value2);
+			if(DEBUG){
+				Serial.printf("Save> index: %u value1: %s (%u) value2: %s (%u)\n", one->index, one->value1, strlen(one->value1), one->value2, strlen(one->value2));
+			}
+		}
+	}
+	return addr;
+}
 
-void Config_print(config_t* one){
-	Serial.println(">>>> Print config");
-	Serial.print("Name: ");
-	Serial.println(one->name);
-	Serial.print("SSID: ");
-	Serial.println(one->ssid);
-	Serial.print("password: ");
-	Serial.println(one->password);
+// load data into structure from EEPROM
+uint16_t EEPROM_M24512::M24512_loadLList(uint16_t offset, LList& list){
+	list.flush();
+	uint16_t addr = offset;
+	uint8_t size = M24512_read_byte(addr);
+	addr++;
+	for(uint8_t i = 0 ; i < size ; i++){
+		uint8_t index = M24512_read_byte(addr);
+		addr++;
 
-	Serial.print("ip: ");
-	Serial.print(one->ip[0]);
-	Serial.print(".");
-	Serial.print(one->ip[1]);
-	Serial.print(".");
-	Serial.print(one->ip[2]);
-	Serial.print(".");
-	Serial.print(one->ip[3]);
-	Serial.println("");
+		uint8_t len1 = M24512_read_byte(addr);
+		addr++;
+		char* str1 = M24512_read_byte(addr, len1);
+		addr += len1;
 
-	Serial.print("ip: ");
-	Serial.print(one->mask[0]);
-	Serial.print(".");
-	Serial.print(one->mask[1]);
-	Serial.print(".");
-	Serial.print(one->mask[2]);
-	Serial.print(".");
-	Serial.print(one->mask[3]);
-	Serial.println("");
-
-	Serial.print("ip: ");
-	Serial.print(one->gateway[0]);
-	Serial.print(".");
-	Serial.print(one->gateway[1]);
-	Serial.print(".");
-	Serial.print(one->gateway[2]);
-	Serial.print(".");
-	Serial.print(one->gateway[3]);
-	Serial.println("");
-
+		uint8_t len2 = M24512_read_byte(addr);
+		addr++;
+		char* str2 = M24512_read_byte(addr, len2);
+		addr += len2;
+		if(DEBUG){
+			Serial.printf("Load> index: %u value1: %s (%u) value2: %s (%u)\n", index, str1, len1, str2, len2);
+		}
+		list.add_malloced(index, str1, str2);
+	}
+	if(DEBUG){
+		Serial.printf("offset> %u\n", addr);
+	}
+	return addr;
 }

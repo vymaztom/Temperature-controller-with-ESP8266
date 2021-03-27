@@ -1,26 +1,18 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <stdint.h>
-#include "eeprom_M24512.h"
 #include "Config.h"
 
 
 // constructor
 Config::Config(){
-	_size = 0;
-	_last_node = NULL;
-	_first_node = NULL;
 }
 
 
 void Config::begin(){
-	Wire.begin(PIN_SDA, PIN_SCL);
+	eeprom.begin();
 	pinMode(PIN_RELE, OUTPUT);
 	pinMode(PIN_BUTTON, INPUT);
 }
 
-
-
+/*
 // load data form EEPROM
 void Config::load(){
 	flush();
@@ -62,160 +54,37 @@ void Config::save(){
 		}
 	}
 }
-
-
-// add data into structure
-uint8_t Config::_add(uint8_t kind, char* data, uint8_t data_size){
-	node_t* one = (node_t*)malloc(sizeof(node_t));
-	if(one == NULL){
-		return 0;
-	}
-
-	one->data = data;
-	one->kind = kind;
-	one->size = data_size;
-	one->next = NULL;
-
-	if(_size == 0){
-		_first_node = one;
-		_last_node = one;
-		_size++;
-	}else{
-		_last_node->next = one;
-		_last_node = one;
-		_size++;
-	}
-
-	return 1;
-}
-
-uint8_t Config::add(uint8_t kind, char* data, uint8_t data_size){
-	node_t* one = (node_t*)malloc(sizeof(node_t));
-	if(one == NULL){
-		return 0;
-	}
-	one->data = (char*)malloc(sizeof(char)*data_size);
-	if(one == NULL){
-		free(one);
-		return 0;
-	}
-	for(uint8_t i = 0 ; i < data_size ; i++){
-		one->data[i] = data[i];
-	}
-
-	one->kind = kind;
-	one->size = data_size;
-	one->next = NULL;
-
-	if(_size == 0){
-		_first_node = one;
-		_last_node = one;
-		_size++;
-	}else{
-		_last_node->next = one;
-		_last_node = one;
-		_size++;
-	}
-
-	return 1;
-}
-
-uint8_t Config::add(uint8_t kind, const char* data, uint8_t data_size){
-	return add(kind, (char*)data, data_size+1);
-}
-
-// remove data from structure
-uint8_t Config::remove(uint8_t kind){
-	if(_size > 0){
-		node_t* last = _first_node;
-		node_t* one = _first_node;
-		if(_first_node->kind == kind){
-			_first_node = one->next;
-			free(one->data);
-			free(one);
-			_size--;
-			if(_size == 0){
-				_first_node = NULL;
-				_last_node = NULL;
-			}
-			return 1;
-		}else{
-			while(one != NULL){
-				last = one;
-				one = last->next;
-				if(one->kind == kind){
-					last->next = one->next;
-					if(one == _last_node){
-						_last_node = last;
-					}
-					free(one->data);
-					free(one);
-					_size--;
-					return 1;
-				}
-			}
-			return 0;
-		}
-	}
-	return 0;
-}
-
-void Config::flush(){
-	while(_size != 0){
-		remove(_first_node->kind);
-	}
-}
-
-uint8_t Config::getSize(){
-	return _size;
-}
-
-// remove data from structure
-void Config::print(){
-	if(_size > 0){
-		node_t* one = _first_node;
-		while(one != NULL){
-			Serial.print(one->kind);
-			Serial.print(" - ");
-			for(uint8_t i = 0 ; i < one->size ; i++){
-				Serial.print(one->data[i]);
-			}
-			Serial.println("");
-			one = one->next;
-		}
-	}
-}
-
-// get data from structure
-char* Config::get(uint8_t kind){
-	if(_size > 0){
-		node_t* one = _first_node;
-		while(one != NULL){
-			if(one->kind == kind){
-				return one->data;
-			}
-			one = one->next;
-		}
-	}
-	return NULL;
-}
-
-
+*/
 /******************************************************************************
 
 					STATIC FUNCTONS FOR DECODE IP FROM TEXT
 
 ******************************************************************************/
+/*
 
-
-bool Config::isNumber(const String& str){
-    return !str.empty() && (str.find_first_not_of("[0123456789]") == std::String::npos);
+uint8_t Config::isNumber(char* str){
+	uint8_t isNum = false;
+	if(str != ""){
+		char numbers[] = "0123456789";
+		isNum = true;
+		for(uint8_t i ; i < strlen(str) ; i++){
+			uint8_t find = false;
+			for(uint8_t j ; j < 10 ; j++){
+				if(numbers[j] == str[i]){
+					find = true;
+					break;
+				}
+			}
+			isNum = isNum && find;
+		}
+	}
+    return isNum;
 }
 
-
-vector<String> Config::split(const String& str, char delim){
+/*
+Vector<String> Config::split(const char* str, char delim){
     auto i = 0;
-    vector<String> list;
+    Vector<String> list;
 
     auto pos = str.find(delim);
 
@@ -231,9 +100,9 @@ vector<String> Config::split(const String& str, char delim){
 }
 
 
-bool Config::validateIP(String ip){
-
-	vector<String> list = split(ip, '.');
+uint8_t Config::validateIP(String ip){
+/*
+	Vector<String> list = split(ip, '.');
 
 	if(list.size() != 4){
 		return false;
@@ -246,102 +115,186 @@ bool Config::validateIP(String ip){
 
 	return true;
 }
+*/
 
 /******************************************************************************
 
-				PUBLIC FUNCTIONS FOR ADD DATA INTO STRUCTURE
+	FUNCTIONS FOR Static Variable ADD and GET DATA INTO LList STRUCTURE
 
 ******************************************************************************/
 
+// simple function for set static data into LList
+uint8_t Config::_setByINDEX(uint8_t index, char* str){
+	staticValues.remove(index);
+	return staticValues.add(index, str);
+}
+
+// simple function for get static data into LList
+char* Config::_getByINDEX(uint8_t index){
+	char* one = staticValues.get(index);
+	return _not2stringIfExist(one);
+}
+
+
+char* Config::_not2stringIfExist(char* one){
+	if(one != NULL){
+		return one;
+	}
+	return "Notdefine";
+}
+
+
+// GLOBAL VARIBALES
+
+uint8_t Config::GLOBAL_setNAME(char* str){
+	return _setByINDEX(I_NAME, str);
+}
+
+char* Config::GLOBAL_getNAME(){
+	return _getByINDEX(I_NAME);
+}
+
+
+
 // AP mode functions
 
-bool Config::_setByINDEX(uint8_t index, String& str){
-	(void)remove(index);
-	return (bool)add(index, str.c_str(), (uint8_t)strlen(str.c_str()));
-}
-
-String Config::_getByINDEX(uint8_t index){
-	String ret = "";
-	char* one = get(index);
-	if(one != NULL){
-		ret = String(one);
-	}
-	return ret;
-}
-
-bool Config::AP_setSSID(String& str){
+uint8_t Config::AP_setSSID(char* str){
 	return _setByINDEX(I_AP_SSID, str);
 }
 
-bool Config::AP_setPASS(String& str){
+uint8_t Config::AP_setPASS(char* str){
 	return _setByINDEX(I_AP_PASS, str);
 }
 
-bool Config::AP_setIP(String& str){
+uint8_t Config::AP_setIP(char* str){
 	return _setByINDEX(I_AP_IP, str);
 }
 
-bool Config::AP_setMASK(String& str){
+uint8_t Config::AP_setMASK(char* str){
 	return _setByINDEX(I_AP_MASK, str);
 }
 
-bool Config::AP_setGATEWAY(String& str){
+uint8_t Config::AP_setGATEWAY(char* str){
 	return _setByINDEX(I_AP_GATEWAY, str);
 }
 
+uint8_t Config::AP_setNOTE(char* str){
+	return _setByINDEX(I_AP_NOTE, str);
+}
 
-String Config::AP_getSSID(){
+
+char* Config::AP_getSSID(){
 	return _getByINDEX(I_AP_SSID);
 }
 
-String Config::AP_getPASS(){
+char* Config::AP_getPASS(){
 	return _getByINDEX(I_AP_PASS);
 }
 
-String Config::AP_getIP(){
+char* Config::AP_getIP(){
 	return _getByINDEX(I_AP_IP);
 }
 
-String Config::AP_getMASK(){
+char* Config::AP_getMASK(){
 	return _getByINDEX(I_AP_MASK);
 }
 
-String Config::AP_getGATEWAY(){
+char* Config::AP_getGATEWAY(){
 	return _getByINDEX(I_AP_GATEWAY);
 }
 
-// STATION MODE
-
-bool Config::STATION_addConnection(String& ssid, String& pass){
-	char* one = get(I_STATION_LIST);
-	uint8_t pos = 255;
-	if(one != NULL){
-		uint8_t pos = atoi(one);
-	}
-	pos--;
-	bool addedNoteSSID = (bool)add(pos, ssid.c_str(), (uint8_t)strlen(ssid.c_str()));
-	pos--;
-	bool addedNotePass = (bool)add(pos, pass.c_str(), (uint8_t)strlen(pass.c_str()));
-	if(addedNoteSSID && addedNotePass){
-		const char* strVal = String((char*)&pos).c_str();
-		return add(I_STATION_LIST, strVal, (uint8_t)strlen(strVal));
-	}
-	return false;
-	String((char*)str)
-
+char* Config::AP_getNOTE(){
+	return _getByINDEX(I_AP_NOTE);
 }
 
-vector<pair<String,String>> Config::STATION_getConnection(){
-	vector<pair<String,String>> ret;
-	char* one = get(I_STATION_LIST);
-	uint8_t pos = 255;
-	if(one != NULL){
-		uint8_t pos = atoi(one);
-	}
-	
 
+char* Config::AP_Bprint(){
+	Buffer buffer;
+	buffer.printf("NAME: %s \n", GLOBAL_getNAME());
+	buffer.printf("SSID: %s \n", AP_getSSID());
+	buffer.printf("PASS: %s \n", AP_getPASS());
+	buffer.printf("  IP: %s \n", AP_getIP());
+	buffer.printf("MASK: %s \n", AP_getMASK());
+	buffer.printf("GATE: %s \n", AP_getGATEWAY());
+	buffer.printf("NOTE: %s \n", AP_getNOTE());
+	return buffer.get();
 }
 
+/******************************************************************************
+
+							STATION MODE
+
+******************************************************************************/
+
+// add data into structure
+uint8_t Config::STATION_addConnection(char* ssid, char* pass){
+	dinamicValues.removeByValue1(ssid);
+	uint8_t max = dinamicValues.getMaxIndex();
+	if(max < 255){
+		return dinamicValues.add(max+1, ssid, pass);
+	}
+	return 0;
+}
+
+// return Buffer CONSOLE format data of seted WIFI connections
+char* Config::STATION_getConnectionCONSLE(){
+	Buffer buffer;
+	buffer.printf("SETTED WIFI FOR CONNECTION\n");
+	for(uint8_t i = 0 ; i <= dinamicValues.getMaxIndex() ; i++){
+		note_t* one = dinamicValues.get_note(i);
+		if(one != NULL){
+			buffer.printf("ID:%3u [SSID: %12s ; password(WPA2): %12s]\n", i, one->value1, one->value2);
+		}
+	}
+	return buffer.get();
+}
+
+// return Buffer JSON data of seted WIFI connections
+char* Config::STATION_getConnectionJSON(){
+	Buffer buffer;
+	buffer.printf("[");
+	for(uint8_t i = 0 ; i <= dinamicValues.getMaxIndex() ; i++){
+		note_t* one = dinamicValues.get_note(i);
+		if(one != NULL){
+			buffer.printf("{");
+			buffer.printf("\"ID\": %i , \"SSID\" : \"%s\"", i, one->value1);
+			buffer.printf("}");
+		}
+	}
+	buffer.printf("]");
+	return buffer.get();
+}
+
+// remove connection from structure by position
+uint8_t Config::STATION_removeConnection(uint8_t index){
+	dinamicValues.remove(index);
+}
+
+// return number of connections
 uint8_t Config::STATION_getNumOfConnection(){
+	return dinamicValues.getSize();
+}
 
+
+
+/******************************************************************************
+
+						SAVE LOAD FUNCTIONS EEPROM_M24512
+
+******************************************************************************/
+
+// sava structures into eeprom
+void Config::save(){
+	uint16_t offset = 0;
+	offset = eeprom.M24512_saveLList(offset, staticValues);
+	offset = eeprom.M24512_saveLList(offset, dinamicValues);
+	eeprom.printPageMemory(0);
+	eeprom.printPageMemory(1);
+}
+
+// load structures into eeprom
+void Config::load(){
+	uint16_t offset = 0;
+	offset = eeprom.M24512_loadLList(offset, staticValues);
+	offset = eeprom.M24512_loadLList(offset, dinamicValues);
 }

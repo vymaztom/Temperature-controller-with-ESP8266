@@ -4,7 +4,6 @@
 //#include <ESP8266WebServer.h>
 #include <Wire.h>
 #include <OneWire.h>
-#include <DS18B20.h>
 #include <ESP8266mDNS.h>
 
 
@@ -13,15 +12,31 @@
 
 #include "webFramework.h"
 
+#include "ProjectConfig.h"
 #include "eeprom_M24512.h"
 #include "Config.h"
 #include "TelnetServer.h"
 #include "WifiModes.h"
+#include "LList.h"
+#include "EEPROM_M24512.h"
 
 #ifndef APSSID
 #define APSSID "ESPap"
 #define APPSK  "heslo123"
 #endif
+
+
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <DS18B20.h>
+
+
+OneWire oneWire(PIN_DATA);
+
+// Pass our oneWire reference to Dallas Temperature sensor
+DallasTemperature sensors(&oneWire);
+DeviceAddress Thermometer;
+int deviceCount = 0;
 
 Config conf;
 webFramework webPage(&conf);
@@ -35,6 +50,7 @@ TelnetServer telnet;
 ******************************************************************************/
 
 
+LList one;
 
 
 void setup() {
@@ -46,29 +62,59 @@ void setup() {
 	WifiMode.begin();
 
 
-	char* d_name = "name\0";
-	char* d_ssid = "WIFI3\0";
-	char* d_password = "passsssss\0";
 
-	conf.add(I_NAME, d_name, 5);
-	conf.add(v_ssid, d_ssid, 6);
-	conf.add(v_password, d_password, 10);
-	conf.print();
+	conf.GLOBAL_setNAME("esp8266");
+	conf.AP_setSSID("ESP8266");
+	conf.AP_setPASS("rootroot");
+	conf.AP_setIP("192.168.1.1");
+	conf.AP_setMASK("255.255.255.0");
+	conf.AP_setGATEWAY("192.168.1.1");
+	conf.AP_setNOTE("Tohle je Poznamka ktera je strasne dlouha a proto se nevleze do stranky Tohle je Poznamka ktera je strasne dlouha a proto se nevleze do stranky Tohle je Poznamka ktera je strasne dlouha a proto se nevleze do stranky Tohle je Poznamka ktera je strasne dlo1");
+	Serial.print(conf.AP_Bprint());
+	Serial.println("-------------------------------------");
 
-	//conf.remove(v_password);
-	Serial.println("***************************");
-	conf.print();
 
-	conf.add(v_note, "note\0", 5);
-	Serial.println("***************************");
-	conf.print();
+	conf.STATION_addConnection("UPC_2G","Ab9876543210");
+	conf.STATION_addConnection("MyNet14","123456789");
+	conf.STATION_addConnection("NETNET","abeceda1");
+	Serial.print(conf.STATION_getConnectionCONSLE());
+	Serial.println("-------------------------------------");
 
-	//conf.save();
+	conf.save();
+	Serial.println("saved");
 	conf.load();
-	Serial.println("***************************");
-	conf.print();
+	Serial.println("load");
 
 
+
+	Serial.println("-------------------------------------");
+	Serial.print(conf.AP_Bprint());
+	Serial.print(conf.STATION_getConnectionCONSLE());
+
+	pinMode(PIN_RELE, OUTPUT);
+
+
+
+	// Start up the library
+    sensors.begin();
+
+    // locate devices on the bus
+    Serial.println("Locating devices...");
+    Serial.print("Found ");
+    deviceCount = sensors.getDeviceCount();
+    Serial.print(deviceCount, DEC);
+    Serial.println(" devices.");
+    Serial.println("");
+
+    Serial.println("Printing addresses...");
+    for (int i = 0;  i < deviceCount;  i++)
+    {
+      Serial.print("Sensor ");
+      Serial.print(i+1);
+      Serial.print(" : ");
+      sensors.getAddress(Thermometer, i);
+      printAddress(Thermometer);
+    }
 
 
 
@@ -140,6 +186,22 @@ void setup() {
 void loop(){
 	MDNS.update();
 	WifiMode.loop();
-	//telnet.loop();
+
+
+
+
+
 	delay(1000);
+}
+
+void printAddress(DeviceAddress deviceAddress)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    Serial.print("0x");
+    if (deviceAddress[i] < 0x10) Serial.print("0");
+    Serial.print(deviceAddress[i], HEX);
+    if (i < 7) Serial.print(", ");
+  }
+  Serial.println("");
 }

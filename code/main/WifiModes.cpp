@@ -39,7 +39,9 @@ void WifiModes::setAPmode(){
 
 
 
-	WiFi.softAP(ssid_, password_, 7, false, 8);
+	//WiFi.softAP(ssid_, password_, 7, false, 8);
+	WiFi.softAP(ssid_, password_);
+
 
 
 
@@ -59,12 +61,13 @@ void WifiModes::setStationMode(){
 
 
 
-	const char* ssid     = "UPC_2G";
-	const char* password = "Ab9876543210";
+	//const char* ssid     = "UPC_2G";
+	//const char* password = "Ab9876543210";
+	const char* ssid     = "PJTKV";
+	const char* password = "abeceda1";
 
 
-
-
+	WiFi.mode(WIFI_STA);
 	wifiMulti.addAP(ssid, password);
 	wifiMulti.addAP("ssid_from_AP_2", "your_password_for_AP_2");
 	wifiMulti.addAP("ssid_from_AP_3", "your_password_for_AP_3");

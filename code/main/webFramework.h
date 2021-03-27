@@ -7,6 +7,7 @@
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <FS.h>
+#include "ProjectConfig.h"
 #include "Config.h"
 
 #define WWW_SERVER_PORT 80

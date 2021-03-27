@@ -1,4 +1,5 @@
 #include "webFramework.h"
+#include "ProjectConfig.h"
 
 webFramework::webFramework(Config* object):server(WWW_SERVER_PORT){
 	config = object;
@@ -9,11 +10,13 @@ webFramework::webFramework(Config* object):server(WWW_SERVER_PORT){
 String webFramework::processor(const String& var){
 	if(var == "STATE"){
 		String ledState;
-		if(digitalRead(16)){
-			ledState = "ON";
+		if(digitalRead(PIN_RELE)){
+			digitalWrite(PIN_RELE, 0);
+			ledState = "OFF";
 		}
 		else{
-			ledState = "OFF";
+			digitalWrite(PIN_RELE, 1);
+			ledState = "ON";
 		}
 		//Serial.print(ledState);
 		return ledState;
@@ -91,8 +94,10 @@ void webFramework::handleRequest_config(AsyncWebServerRequest *request){
 void webFramework::handleRequest_wifiConfig_JSON(AsyncWebServerRequest *request){
 	String json = "[";
 	bool isFirtst = true;
-	for(uint8_t i = 0 ; i < config->getSize() ; ++i){
-		char* one = config->get((values)i);
+	//for(uint8_t i = 0 ; i < config->getSize() ; ++i){
+	for(uint8_t i = 0 ; i < 10 ; ++i){
+		//char* one = config->get((uint8_t)i);
+		char* one = NULL;
 		if(one != NULL){
 			if(!isFirtst) json += ",";
 			isFirtst = false;
