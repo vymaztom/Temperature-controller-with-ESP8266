@@ -320,7 +320,7 @@ $EndComp
 Text GLabel 4700 3050 0    50   Input ~ 0
 BUTTON
 Text GLabel 3350 3000 2    50   Input ~ 0
-GPIO016
+GPIO16
 Wire Wire Line
 	3350 3000 3150 3000
 Text GLabel 3350 2600 2    50   Input ~ 0

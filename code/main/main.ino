@@ -1,47 +1,30 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-//#include <ESP8266WebServer.h>
 #include <Wire.h>
 #include <OneWire.h>
-#include <ESP8266mDNS.h>
-
-
-
 
 
 #include "webFramework.h"
 
 #include "ProjectConfig.h"
-#include "eeprom_M24512.h"
 #include "Config.h"
-#include "TelnetServer.h"
 #include "WifiModes.h"
 #include "LList.h"
-#include "EEPROM_M24512.h"
-
-#ifndef APSSID
-#define APSSID "ESPap"
-#define APPSK  "heslo123"
-#endif
+#include "EEPROM_24LC16B.h"
+#include "Controller.h"
 
 
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <DS18B20.h>
 
 
-OneWire oneWire(PIN_DATA);
 
-// Pass our oneWire reference to Dallas Temperature sensor
-DallasTemperature sensors(&oneWire);
-DeviceAddress Thermometer;
-int deviceCount = 0;
 
 Config conf;
-webFramework webPage(&conf);
+Controller control(&conf);
+webFramework webPage(&conf, &control);
 WifiModes WifiMode(&conf);
-TelnetServer telnet;
+//EEPROM_24LC16B eeprom;
+
 
 /******************************************************************************
 
@@ -50,26 +33,78 @@ TelnetServer telnet;
 ******************************************************************************/
 
 
-LList one;
 
 
-void setup() {
+
+
+void setup(){
 	delay(1000);
+
 	Serial.begin(115200);
+
+/*
+	eeprom.begin();
+	uint8_t offset = 0;
+	uint8_t _offset = 0;
+	eeprom.write(PAGE_1, &offset, "esp8266");
+	Serial.printf("read: %s\n", eeprom.read(PAGE_1, &_offset));
+	Serial.printf("%u _%u\n", offset, _offset);
+	eeprom.printPageMemory(PAGE_1);
+*/
+
+
+	/*
+	Wire.begin();
+	eeprom_write(0x50, 0, 200);
+	eeprom_write(0x51, 0, 201);
+	eeprom_write(0x52, 0, 202);
+	eeprom_write(0x53, 0, 203);
+	eeprom_write(0x54, 0, 204);
+	eeprom_write(0x55, 0, 205);
+	eeprom_write(0x56, 0, 206);
+	eeprom_write(0x57, 0, 207);
+
+	Serial.printf("read data: %u\n", eeprom_read(0x50, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x51, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x52, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x53, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x54, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x55, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x56, 0));
+	Serial.printf("read data: %u\n", eeprom_read(0x57, 0));
+	*/
+
 	conf.begin();
-	telnet.begin();
 	webPage.begin();
 	WifiMode.begin();
+	control.begin();
 
 
 
+/*
+	digitalWrite(PIN_LED_GREEN, 1);
+	delay(1000);
+	digitalWrite(PIN_LED_YELLOW, 1);
+	delay(1000);
+	digitalWrite(PIN_RELE, 1);
+*/
+	/*
+	conf.load();
+
+	#define MOVE_PAGE 512
+
+	conf.AP_setNOTE("NoteAAAAAA");
+	Serial.printf("Read: %u\n", conf.eeprom.M24512_read_byte(MOVE_PAGE));
+	conf.eeprom.M24512_write_byte(MOVE_PAGE,'Z');
+	Serial.printf("Read: %u\n", conf.eeprom.M24512_read_byte(MOVE_PAGE));
+	conf.eeprom.printPageMemory(conf.eeprom.M24512_getNumberOfPageByAddres(MOVE_PAGE));
+/*
 	conf.GLOBAL_setNAME("esp8266");
 	conf.AP_setSSID("ESP8266");
 	conf.AP_setPASS("rootroot");
 	conf.AP_setIP("192.168.1.1");
 	conf.AP_setMASK("255.255.255.0");
 	conf.AP_setGATEWAY("192.168.1.1");
-	conf.AP_setNOTE("Tohle je Poznamka ktera je strasne dlouha a proto se nevleze do stranky Tohle je Poznamka ktera je strasne dlouha a proto se nevleze do stranky Tohle je Poznamka ktera je strasne dlouha a proto se nevleze do stranky Tohle je Poznamka ktera je strasne dlo1");
 	Serial.print(conf.AP_Bprint());
 	Serial.println("-------------------------------------");
 
@@ -80,96 +115,32 @@ void setup() {
 	Serial.print(conf.STATION_getConnectionCONSLE());
 	Serial.println("-------------------------------------");
 
-	conf.save();
-	Serial.println("saved");
-	conf.load();
-	Serial.println("load");
+	//conf.save();
 
+	Serial.println("saved");
+
+	Serial.println("load");
+	//conf.load();
+
+	conf.AP_setNOTE("Note 2");
+	conf.textValues_add(1, "Regulátor teploty", "Temperature controller");
+
+	//conf.save();
+	//conf.load();
 
 
 	Serial.println("-------------------------------------");
+
+	conf.STATION_addConnection("WIFI","AAAAAAAAAAAA");
+	conf.Print();
+
+	/*
 	Serial.print(conf.AP_Bprint());
 	Serial.print(conf.STATION_getConnectionCONSLE());
-
-	pinMode(PIN_RELE, OUTPUT);
-
-
-
-	// Start up the library
-    sensors.begin();
-
-    // locate devices on the bus
-    Serial.println("Locating devices...");
-    Serial.print("Found ");
-    deviceCount = sensors.getDeviceCount();
-    Serial.print(deviceCount, DEC);
-    Serial.println(" devices.");
-    Serial.println("");
-
-    Serial.println("Printing addresses...");
-    for (int i = 0;  i < deviceCount;  i++)
-    {
-      Serial.print("Sensor ");
-      Serial.print(i+1);
-      Serial.print(" : ");
-      sensors.getAddress(Thermometer, i);
-      printAddress(Thermometer);
-    }
-
-
-
-
-	/*
-	Serial.println();
-	Serial.print("Configuring access point...");
+	Serial.print(conf.textValues_Bprint());
 	*/
 
 
-/******************************************************************************/
-
-	/*
-	WiFi.softAP(ssid, password);
-	IPAddress myIP = WiFi.softAPIP();
-	Serial.print("AP IP address: ");
-	Serial.println(myIP);
-	*/
-
-
-	// Connect to Wi-Fi network with SSID and password
-	/*
-	Serial.print("Connecting to ");
-	Serial.println(ssid);
-	WiFi.begin(ssid, password);
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.print(".");
-	}
-	*/
-
-	/******************************************************************************/
-
-/*
-	server.on("/", handleRoot);
-	server.begin();
-	Serial.println("HTTP server started");
-	*/
-	/*
-	Serial.println("");
-	Serial.println("WiFi connected.");
-	Serial.println("IP address: ");
-	Serial.println(WiFi.localIP());
-	*/
-
-
-
-
-	if (MDNS.begin("esp8266")) {              // Start the mDNS responder for esp8266.local
-		Serial.println("mDNS responder started");
-	} else {
-		Serial.println("Error setting up MDNS responder!");
-	}
-
-	//server.begin();
 
 }
 
@@ -181,27 +152,39 @@ void setup() {
 
 ******************************************************************************/
 
-
-
 void loop(){
-	MDNS.update();
 	WifiMode.loop();
-
-
-
-
-
-	delay(1000);
+	if(run){
+		control.loop();
+	}else{
+		control.begin();
+	}
+}
+/*
+uint8_t eeprom_read(uint8_t chip_addr, uint8_t addr){
+	uint8_t ret = 0;
+	Wire.beginTransmission(chip_addr);
+	Wire.write(addr);
+	if(Wire.endTransmission() != 0){
+		ConsolePrint("EEPROM  read", "ERROR");
+	}
+	Wire.requestFrom(chip_addr, 1);
+	if(Wire.available() == 1){
+		ret = Wire.read();
+	}else{
+		ConsolePrint("EEPROM  read", "NO DATA");
+	}
+	delay(5);
+	return ret;
 }
 
-void printAddress(DeviceAddress deviceAddress)
-{
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    Serial.print("0x");
-    if (deviceAddress[i] < 0x10) Serial.print("0");
-    Serial.print(deviceAddress[i], HEX);
-    if (i < 7) Serial.print(", ");
-  }
-  Serial.println("");
+void eeprom_write(uint8_t chip_addr, uint8_t addr, uint8_t data){
+	Wire.beginTransmission(chip_addr);
+	Wire.write(addr);
+	Wire.write(data);
+	if(Wire.endTransmission() != 0){
+		ConsolePrint("EEPROM  write", "ERROR");
+	}
+	delay(5);
 }
+*/

@@ -1,15 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ESP32 Web Server</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" type="text/css" href="style.css">
+	<title>ESP32 Web Server</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+	<link rel="icon" href="data:,">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script type="text/javascript" src="javaScript.js"></script>
+
 </head>
 <body>
-  <h1>Temperature Controler</h1>
-  <p>GPIO state: <strong> %STATE%</strong></p>
-  <p><a href="/on"><button class="button">ON</button></a></p>
-  <p><a href="/off"><button class="button button2">OFF</button></a></p>
+	<h1>Temperature controller</h1>
+	<p>
+		<a href="index.html"><button class="contend red">Status</button></a>
+		<a href="config.html"><button class="contend blue">Config</button></a>
+	</p>
+	<div class="SetTemperature">
+		<h3 class="onoff">
+			Regulator ON/OFF:
+			<input class="onoff" type="checkbox" id="switch" /><label for="switch">Toggle</label>
+		</h3>
+	</div>
+	<div class="SetTemperature">
+		<h3>Temperature:</h3>
+		<h4><div id="temperature"></div></h4>
+	</div>
+	<div class="SetTemperature">
+		<h3>Setted temperature:</h3>
+		<h4><div id="setedtemperature"></div> °C</h4>
+	</div>
+	<div class="SetTemperature">
+		<span class="bound_label left">-20°C</span>
+		<span class="bound_label right">50°C</span>
+		<input type="range" id="setTemp" min="-20" max="50" value="21" step="1">
+	</div>
+	<div class="SetTemperature">
+		<h3>Hysteresis:</h3>
+		<h4><div id="hysterez"></div> °C</h4>
+	</div>
+	<div class="SetTemperature">
+		<span class="bound_label left">0°C</span>
+		<span class="bound_label right">10°C</span>
+		<input type="range" id="setHys" min="0" max="10" value="2" step="1">
+	</div>
+	<div class="center">
+		<h3>Status</h3>
+		<div id="divSVG"></div>
+	</div>
+
+
+	<script type="text/javascript">
+
+	/*
+	let d = new Dopyo("graph", "Line");
+	d.setLabels(getJSON("/TemperatureLabel"));
+	d.addLegend(getJSON("/TemperatureData"));
+	//d.setAxisYMinValue(22);
+	//d.setAxisYMaxValue(25);
+	*/
+	/*
+	d.setPadding(75, 30, 10, 0);
+	d.setTitleShow(false);
+	d.setAxisXMinValue(0);
+	d.setAxisXMaxValue(100);
+	d.setGridXShow(true);
+	d.setGridYShow(true);
+	d.setLegendTableShow(false);
+	*/
+	/*
+	let div = document.getElementById("divSVG");
+	d.inject(div);
+	d.draw();
+
+
+	var  size = getSizeOfScrean();
+	*/
+
+	setInterval(indexLoop, 1000);
+
+	document.getElementById("setTemp").addEventListener("change", function(){
+		sendGET("/setDATA?temperature=" + String(document.getElementById("setTemp").value));
+	});
+	document.getElementById("setHys").addEventListener("change", function(){
+		sendGET("/setDATA?hysteresis=" + String(document.getElementById("setHys").value));
+	});
+	document.getElementById("switch").addEventListener("change", function(){
+		sendGET("/setDATA?active=" + String(document.getElementById("switch").checked));
+		console.log("/setDATA?active=" + String(document.getElementById("switch").checked));
+	});
+	</script>
 </body>
 </html>

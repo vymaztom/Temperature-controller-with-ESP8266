@@ -6,6 +6,8 @@
 #include "ProjectConfig.h"
 #include "Buffer.h"
 
+#define MAX_STRING_LENG 255
+#define MAX_INDEX_LENG 256
 
 typedef struct note{
 	uint8_t index;

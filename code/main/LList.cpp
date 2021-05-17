@@ -30,9 +30,23 @@ uint8_t LList::add(uint8_t index, char* value1){
 // add string into structuress for two varible
 uint8_t LList::add(uint8_t index, char* value1, char* value2){
 
+	if(strlen(value1) > MAX_STRING_LENG){
+		value1[MAX_STRING_LENG] = '\0';
+		#if DEBUG
+		Serial.printf("ERR: string to long value1 (reduce to %u chars)\n", strlen(value1));
+		#endif
+	}
+	if(strlen(value2) > MAX_STRING_LENG){
+		value2[MAX_STRING_LENG] = '\0';
+		#if DEBUG
+		Serial.printf("ERR: string to long value12 (reduce to %u chars)\n", strlen(value2));
+		#endif
+	}
+
 	char* str1 = (char*)malloc(sizeof(char)*(strlen(value1)+1));
 
 	if(str1 == NULL){
+		Serial.println("ERROR: value1");
 		return 0;
 	}
 
@@ -40,6 +54,7 @@ uint8_t LList::add(uint8_t index, char* value1, char* value2){
 
 	if(str2 == NULL){
 		free(str1);
+		Serial.println("ERROR: value2");
 		return 0;
 	}
 
@@ -55,9 +70,22 @@ uint8_t LList::add_malloced(uint8_t index, char* value1, char* value2){
 	note_t* one = (note_t*)malloc(sizeof(note_t));
 
 	if(one == NULL){
+		Serial.println("ERROR: MALLOC STRUCTURE");
 		return 0;
 	}
 
+	if(strlen(value1) > MAX_STRING_LENG){
+		value1[MAX_STRING_LENG] = '\0';
+		#if DEBUG
+		Serial.printf("ERR: string to long value1 (reduce to %u chars)\n", strlen(value1));
+		#endif
+	}
+	if(strlen(value2) > MAX_STRING_LENG){
+		value2[MAX_STRING_LENG] = '\0';
+		#if DEBUG
+		Serial.printf("ERR: string to long value12 (reduce to %u chars)\n", strlen(value2));
+		#endif
+	}
 	one->value1 = value1;
 	one->value2 = value2;
 	one->index = index;
@@ -87,6 +115,9 @@ void LList::remove(uint8_t index){
 					if(DEBUG){
 						Serial.printf("Other Remove: %i _first_note add %p free %p size: %u \n",one->index, _first_note, one, _size);
 					}
+					if(one->next == NULL){
+						_last_note = last;
+					}
 					free(one->value1);
 					free(one->value2);
 					free(one);
@@ -112,13 +143,18 @@ void LList::removeByValue1(char* value1){
 						Serial.printf("First Remove: %i _first_note add %p free %p size: %u \n",one->index, _first_note, one, _size);
 					}
 					free(one->value1);
+					free(one->value2);
 					free(one);
 				}else{
 					last->next = one->next;
+					if(one->next == NULL){
+						_last_note = last;
+					}
 					if(DEBUG){
 						Serial.printf("Other Remove: %i _first_note add %p free %p size: %u \n",one->index, _first_note, one, _size);
 					}
 					free(one->value1);
+					free(one->value2);
 					free(one);
 				}
 				_size--;
@@ -178,15 +214,18 @@ char* LList::Bprint(){
 // Print structure wiht pointers from structure into Buffre
 char* LList::Bprint_list(){
 	Buffer buffer;
+	buffer.printf("[ size: ");
 	if(_size > 0){
 		note_t* one = _first_note;
-		buffer.printf("[ size: %u\n", _size);
+		buffer.printf("%u\n", _size);
 		while(one != NULL){
 			buffer.printf("{index:%i ; value1:%s ; value2:%s  }\n", one->index, one->value1, one->value2);
 			one = one->next;
 		}
-		buffer.printf("] \n");
+	}else{
+		buffer.printf("0\n{}\n");
 	}
+	buffer.printf("] \n");
 	return buffer.get();
 }
 
@@ -204,6 +243,7 @@ char* LList::get(uint8_t index){
 	}
 	return NULL;
 }
+
 
 // get addres into note from structure by index
 note_t* LList::get_note(uint8_t index){

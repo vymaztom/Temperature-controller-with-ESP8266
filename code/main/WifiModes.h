@@ -5,8 +5,10 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
+#include <ESP8266mDNS.h>
 #include "ProjectConfig.h"
 #include "Config.h"
+#include "Timer.h"
 
 #define MODE_AP 1
 #define MODE_STATION 0
@@ -23,11 +25,11 @@ private:
 	uint8_t seted_mode;
 	Config* config;
 	ESP8266WiFiMulti wifiMulti;
+	Timer *toggle_LED;
 	void setAPmode();
 	void setStationMode();
-	void printWifiInfo();
-
-
+	void wifiScan();
+	int findBestChanel();
 };
 
 

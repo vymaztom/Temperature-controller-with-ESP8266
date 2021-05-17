@@ -1,121 +1,29 @@
 #include "Config.h"
 
-
-// constructor
-Config::Config(){
-}
-
+Config::Config(){}
 
 void Config::begin(){
 	eeprom.begin();
+
 	pinMode(PIN_RELE, OUTPUT);
 	pinMode(PIN_BUTTON, INPUT);
-}
 
-/*
-// load data form EEPROM
-void Config::load(){
-	flush();
-	uint16_t addr = 0;
-	uint8_t struct_size = M24512_read_byte(addr);
-	addr++;
-	for(uint8_t i = 0 ; i < struct_size ; i++){
-		uint8_t kind = (uint8_t)M24512_read_byte(addr);
-		addr++;
-		uint8_t size = M24512_read_byte(addr);
-		addr++;
-		char* data = (char*)malloc(sizeof(char)*size);
-		for(uint8_t j = 0 ; j < size ; j++){
-			data[j] = (char)M24512_read_byte(addr);
-			addr++;
-		}
-		_add(kind, data, size);
-	}
-
-}
-
-// save data into eeprom
-void Config::save(){
-	uint16_t addr = 0;
-	M24512_write_byte(addr, _size);
-	addr++;
-	if(_size > 0){
-		node_t* one = _first_node;
-		while(one != NULL){
-			M24512_write_byte(addr, (uint8_t)one->kind);
-			addr++;
-			M24512_write_byte(addr, (uint8_t)one->size);
-			addr++;
-			for(uint8_t i = 0 ; i < one->size ; i++){
-				M24512_write_byte(addr, (uint8_t)one->data[i]);
-				addr++;
-			}
-			one = one->next;
-		}
-	}
-}
-*/
-/******************************************************************************
-
-					STATIC FUNCTONS FOR DECODE IP FROM TEXT
-
-******************************************************************************/
-/*
-
-uint8_t Config::isNumber(char* str){
-	uint8_t isNum = false;
-	if(str != ""){
-		char numbers[] = "0123456789";
-		isNum = true;
-		for(uint8_t i ; i < strlen(str) ; i++){
-			uint8_t find = false;
-			for(uint8_t j ; j < 10 ; j++){
-				if(numbers[j] == str[i]){
-					find = true;
-					break;
-				}
-			}
-			isNum = isNum && find;
-		}
-	}
-    return isNum;
-}
-
-/*
-Vector<String> Config::split(const char* str, char delim){
-    auto i = 0;
-    Vector<String> list;
-
-    auto pos = str.find(delim);
-
-    while (pos != String::npos) {
-        list.push_back(str.substr(i, pos - i));
-        i = ++pos;
-        pos = str.find(delim, pos);
-    }
-
-    list.push_back(str.substr(i, str.length()));
-
-    return list;
+	// print info about device
+	char buffer[40];
+	sprintf(buffer, "%1.5f V", ((float)ESP.getVcc())/20000);
+	ConsolePrint("CHIP info VCC", buffer);
+	ConsolePrint("CHIP info Chip ID", String(ESP.getChipId()).c_str());
+	ConsolePrint("CHIP info Flash Chip ID", String(ESP.getFlashChipId()).c_str());
+	ConsolePrint("CHIP info Core version", ESP.getCoreVersion().c_str());
+	ConsolePrint("CHIP info SDK version", ESP.getSdkVersion());
+	ConsolePrint("CHIP info Boot version", String(ESP.getBootVersion()).c_str());
+	ConsolePrint("CHIP info CPU frequency", (String(ESP.getCpuFreqMHz()) + " MHz").c_str());
+	ConsolePrint("CHIP info FREE HEAP", (String(ESP.getFreeHeap()) + " B").c_str());
+	ConsolePrint("CHIP info FREE CONST. STACK", (String(ESP.getFreeContStack()) + " B").c_str());
+	ConsolePrint("CHIP info real FLASH size", (String(ESP.getFlashChipRealSize()) + " B").c_str());
 }
 
 
-uint8_t Config::validateIP(String ip){
-/*
-	Vector<String> list = split(ip, '.');
-
-	if(list.size() != 4){
-		return false;
-	}
-
-	for(String str : list){
-		if (!isNumber(str) || stoi(str) > 255 || stoi(str) < 0)
-		return false;
-	}
-
-	return true;
-}
-*/
 
 /******************************************************************************
 
@@ -123,19 +31,8 @@ uint8_t Config::validateIP(String ip){
 
 ******************************************************************************/
 
-// simple function for set static data into LList
-uint8_t Config::_setByINDEX(uint8_t index, char* str){
-	staticValues.remove(index);
-	return staticValues.add(index, str);
-}
 
-// simple function for get static data into LList
-char* Config::_getByINDEX(uint8_t index){
-	char* one = staticValues.get(index);
-	return _not2stringIfExist(one);
-}
-
-
+// return nondefine string if string is null
 char* Config::_not2stringIfExist(char* one){
 	if(one != NULL){
 		return one;
@@ -144,79 +41,121 @@ char* Config::_not2stringIfExist(char* one){
 }
 
 
-// GLOBAL VARIBALES
-
-uint8_t Config::GLOBAL_setNAME(char* str){
-	return _setByINDEX(I_NAME, str);
+uint8_t Config::setNAME(char* str){
+	if(strlen(str) <= SIZE_NAMEDEVICE){
+		memcpy(name, str, strlen(str)+1);
+		return 1;
+	}
+	return 0;
 }
 
-char* Config::GLOBAL_getNAME(){
-	return _getByINDEX(I_NAME);
+uint8_t Config::setSSID(char* str){
+	if(strlen(str) <= SIZE_SSID){
+		memcpy(ssid, str, strlen(str)+1);
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t Config::setPASS(char* str){
+	if(strlen(str) <= SIZE_PASSWORD){
+		memcpy(password, str, strlen(str)+1);
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t Config::setIP(char* str){
+	uint8_t *one = StringToIP(str);
+	uint8_t ret = 0;
+	if(one[4] == 1){
+		memcpy(ip, one, 4);
+		ret = 1;
+	}
+	free(one);
+	return ret;
+}
+
+uint8_t Config::setMASK(char* str){
+	uint8_t *one = StringToIP(str);
+	uint8_t ret = 0;
+	if(one[4] == 1){
+		memcpy(mask, one, 4);
+		ret = 1;
+	}
+	free(one);
+	return ret;
+}
+
+uint8_t Config::setGATEWAY(char* str){
+	uint8_t *one = StringToIP(str);
+	uint8_t ret = 0;
+	if(one[4] == 1){
+		memcpy(gateway, one, 4);
+		ret = 1;
+	}
+	free(one);
+	return ret;
+}
+
+void Config::_setIP(uint8_t* one){
+	memcpy(ip, one, 4);
+}
+
+void Config::_setMASK(uint8_t* one){
+	memcpy(mask, one, 4);
+}
+
+void Config::_setGATEWAY(uint8_t* one){
+	memcpy(gateway, one, 4);
 }
 
 
-
-// AP mode functions
-
-uint8_t Config::AP_setSSID(char* str){
-	return _setByINDEX(I_AP_SSID, str);
+char* Config::getNAME(){
+	return name;
 }
 
-uint8_t Config::AP_setPASS(char* str){
-	return _setByINDEX(I_AP_PASS, str);
+char* Config::getSSID(){
+	return ssid;
 }
 
-uint8_t Config::AP_setIP(char* str){
-	return _setByINDEX(I_AP_IP, str);
+char* Config::getPASS(){
+	return password;
 }
 
-uint8_t Config::AP_setMASK(char* str){
-	return _setByINDEX(I_AP_MASK, str);
+char* Config::getIP(){
+	return IPToString(ip);
 }
 
-uint8_t Config::AP_setGATEWAY(char* str){
-	return _setByINDEX(I_AP_GATEWAY, str);
+char* Config::getMASK(){
+	return IPToString(mask);
 }
 
-uint8_t Config::AP_setNOTE(char* str){
-	return _setByINDEX(I_AP_NOTE, str);
+char* Config::getGATEWAY(){
+	return IPToString(gateway);
 }
 
-
-char* Config::AP_getSSID(){
-	return _getByINDEX(I_AP_SSID);
+uint8_t* Config::_getIP(){
+	return ip;
 }
 
-char* Config::AP_getPASS(){
-	return _getByINDEX(I_AP_PASS);
+uint8_t* Config::_getMASK(){
+	return mask;
 }
 
-char* Config::AP_getIP(){
-	return _getByINDEX(I_AP_IP);
-}
-
-char* Config::AP_getMASK(){
-	return _getByINDEX(I_AP_MASK);
-}
-
-char* Config::AP_getGATEWAY(){
-	return _getByINDEX(I_AP_GATEWAY);
-}
-
-char* Config::AP_getNOTE(){
-	return _getByINDEX(I_AP_NOTE);
+uint8_t* Config::_getGATEWAY(){
+	return gateway;
 }
 
 
 char* Config::AP_Bprint(){
 	Buffer buffer;
-	buffer.printf("NAME: %s \n", GLOBAL_getNAME());
-	buffer.printf("SSID: %s \n", AP_getSSID());
-	buffer.printf("PASS: %s \n", AP_getPASS());
-	buffer.printf("  IP: %s \n", AP_getIP());
-	buffer.printf("MASK: %s \n", AP_getMASK());
-	buffer.printf("GATE: %s \n", AP_getGATEWAY());
-	buffer.printf("NOTE: %s \n", AP_getNOTE());
+	buffer.printf("NAME: %s \n", getNAME());
+	buffer.printf("SSID: %s \n", getSSID());
+	buffer.printf("PASS: %s \n", getPASS());
+	buffer.printf("  IP: %s \n", getIP());
+	buffer.printf("MASK: %s \n", getMASK());
+	buffer.printf("GATE: %s \n", getGATEWAY());
 	return buffer.get();
 }
 
@@ -228,10 +167,10 @@ char* Config::AP_Bprint(){
 
 // add data into structure
 uint8_t Config::STATION_addConnection(char* ssid, char* pass){
-	dinamicValues.removeByValue1(ssid);
-	uint8_t max = dinamicValues.getMaxIndex();
-	if(max < 255){
-		return dinamicValues.add(max+1, ssid, pass);
+	stationValues.removeByValue1(ssid);
+	uint8_t max = stationValues.getMaxIndex();
+	if(max < MAX_INDEX_LENG){
+		return stationValues.add(max+1, ssid, pass);
 	}
 	return 0;
 }
@@ -240,8 +179,8 @@ uint8_t Config::STATION_addConnection(char* ssid, char* pass){
 char* Config::STATION_getConnectionCONSLE(){
 	Buffer buffer;
 	buffer.printf("SETTED WIFI FOR CONNECTION\n");
-	for(uint8_t i = 0 ; i <= dinamicValues.getMaxIndex() ; i++){
-		note_t* one = dinamicValues.get_note(i);
+	for(uint8_t i = 0 ; i <= stationValues.getMaxIndex() ; i++){
+		note_t* one = stationValues.get_note(i);
 		if(one != NULL){
 			buffer.printf("ID:%3u [SSID: %12s ; password(WPA2): %12s]\n", i, one->value1, one->value2);
 		}
@@ -253,8 +192,8 @@ char* Config::STATION_getConnectionCONSLE(){
 char* Config::STATION_getConnectionJSON(){
 	Buffer buffer;
 	buffer.printf("[");
-	for(uint8_t i = 0 ; i <= dinamicValues.getMaxIndex() ; i++){
-		note_t* one = dinamicValues.get_note(i);
+	for(uint8_t i = 0 ; i <= stationValues.getMaxIndex() ; i++){
+		note_t* one = stationValues.get_note(i);
 		if(one != NULL){
 			buffer.printf("{");
 			buffer.printf("\"ID\": %i , \"SSID\" : \"%s\"", i, one->value1);
@@ -267,14 +206,17 @@ char* Config::STATION_getConnectionJSON(){
 
 // remove connection from structure by position
 uint8_t Config::STATION_removeConnection(uint8_t index){
-	dinamicValues.remove(index);
+	stationValues.remove(index);
 }
 
 // return number of connections
 uint8_t Config::STATION_getNumOfConnection(){
-	return dinamicValues.getSize();
+	return stationValues.getSize();
 }
 
+char* Config::STATION_Bprint(){
+	return stationValues.Bprint_list();
+}
 
 
 /******************************************************************************
@@ -285,16 +227,95 @@ uint8_t Config::STATION_getNumOfConnection(){
 
 // sava structures into eeprom
 void Config::save(){
-	uint16_t offset = 0;
-	offset = eeprom.M24512_saveLList(offset, staticValues);
-	offset = eeprom.M24512_saveLList(offset, dinamicValues);
-	eeprom.printPageMemory(0);
-	eeprom.printPageMemory(1);
+	uint8_t offset = 0;
+
+	eeprom.write(PAGE_1, &offset, getNAME());
+	eeprom.write(PAGE_1, &offset, getSSID());
+	eeprom.write(PAGE_1, &offset, getPASS());
+	eeprom.write_ip(PAGE_1, &offset, _getIP());
+	eeprom.write_ip(PAGE_1, &offset, _getMASK());
+	eeprom.write_ip(PAGE_1, &offset, _getGATEWAY());
+
+	eeprom.printPageMemory(PAGE_1);
+
 }
 
 // load structures into eeprom
 void Config::load(){
-	uint16_t offset = 0;
-	offset = eeprom.M24512_loadLList(offset, staticValues);
-	offset = eeprom.M24512_loadLList(offset, dinamicValues);
+	uint8_t offset = 0;
+
+	setNAME(eeprom.read(PAGE_1, &offset));
+	setSSID(eeprom.read(PAGE_1, &offset));
+	setPASS(eeprom.read(PAGE_1, &offset));
+	_setIP(eeprom.read_ip(PAGE_1, &offset));
+	_setMASK(eeprom.read_ip(PAGE_1, &offset));
+	_setGATEWAY(eeprom.read_ip(PAGE_1, &offset));
+
+	Serial.print(AP_Bprint());
+
+	eeprom.printPageMemory(PAGE_1);
+
+}
+
+
+void Config::Print(){
+	Serial.println(STATION_Bprint());
+}
+
+
+/******************************************************************************
+
+					PRIVATE FUNCTIONS FOR DECODE IP FROM TEXT
+
+******************************************************************************/
+
+// valide and decode string IP to array of uint8_t
+// retunr 5 x uint8_t
+// {(IP_1_byte),(IP_2_byte),(IP_3_byte),(IP_4_byte),(valide 1 or 0 for invalide)}
+uint8_t* Config::StringToIP(char* str){
+	uint8_t* ret = (uint8_t*)malloc(sizeof(uint8_t)*5);
+	uint8_t len = strlen(str);
+	uint16_t value = 0;
+	uint8_t pos = 0;
+	ret[4] = 1;
+	if((len > 6) && (len < 16)){
+		for(uint8_t i = 0 ; (i <= len) && (pos < 4) ; i++){
+			char one = str[i];
+			if((one == '.') || (one == '\0')){
+				if(value < 256){
+					ret[pos] = value;
+					pos++;
+					value = 0;
+				}else{
+					ret[4] *= 0;
+				}
+			}else if((one >= '0')&&(one <= '9')){
+				value *= 10;
+				value += one - 48;
+			}else{
+				ret[4] *= 0;
+			}
+		}
+		if(pos != 4){
+			ret[4] *= 0;
+		}
+	}else{
+		ret[4] *= 0;
+	}
+	Serial.printf("%u.%u.%u.%u -> %u\n",ret[0],ret[1],ret[2],ret[3],ret[4]);
+	return ret;
+}
+
+
+char* Config::IPToString(uint8_t* input){
+	String ret = "";
+	ret += String(input[0]) + ".";
+	ret += String(input[1]) + ".";
+	ret += String(input[2]) + ".";
+	ret += String(input[3]) + "\0";
+
+	Serial.printf("%s\n", ret.c_str());
+	char* str = (char*)ret.c_str();
+	memcpy(output, str, strlen(str)+1);
+	return output;
 }

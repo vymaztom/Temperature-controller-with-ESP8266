@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <stdint.h>
 #include "LList.h"
-#include "EEPROM_M24512.h"
+#include "EEPROM_24LC16B.h"
 #include "ProjectConfig.h"
 #include "Buffer.h"
 
@@ -17,12 +17,12 @@
 // INDEX OF VALUSE
 #define I_NAME 0
 
-#define I_AP_IP 10
-#define I_AP_MASK 11
-#define I_AP_GATEWAY 12
-#define I_AP_SSID 13
-#define I_AP_PASS 14
-#define I_AP_NOTE 15
+#define I_AP_IP 1
+#define I_AP_MASK 2
+#define I_AP_GATEWAY 3
+#define I_AP_SSID 4
+#define I_AP_PASS 5
+#define I_AP_NOTE 6
 
 
 
@@ -44,59 +44,53 @@ public:
 	// load structures into eeprom
 	void load();
 
-/*
-	static uint8_t validateIP(String ip);
-
-	//static Vector<String> split(const char* str, char delim);
-
-	static uint8_t isNumber(char* str);
-
-*/
-
-
-	/********************** GLOBAL VARIBLES METHODS **************************/
-
-	uint8_t GLOBAL_setNAME(char* str);
-
-
-	char* GLOBAL_getNAME();
-
-
 	/************************ AP MODE SET METHODS ****************************/
+	uint8_t setNAME(char* str);
 
-	uint8_t AP_setSSID(char* str);
+	uint8_t setSSID(char* str);
 
-	uint8_t AP_setPASS(char* str);
+	uint8_t setPASS(char* str);
 
-	uint8_t AP_setIP(char* str);
+	uint8_t setIP(char* str);
 
-	uint8_t AP_setMASK(char* str);
+	uint8_t setMASK(char* str);
 
-	uint8_t AP_setGATEWAY(char* str);
+	uint8_t setGATEWAY(char* str);
 
-	uint8_t AP_setNOTE(char* str);
+	void _setIP(uint8_t* one);
+
+	void _setMASK(uint8_t* one);
+
+	void _setGATEWAY(uint8_t* one);
 
 	/************************ AP MODE GET METHODS ****************************/
 
+	// get device name
+	char* getNAME();
+
 	// get SSID ifnset return Notdefine
-	char* AP_getSSID();
+	char* getSSID();
 
 	// get PASSWORD ifnset return Notdefine
-	char* AP_getPASS();
+	char* getPASS();
 
 	// get IP ifnset return Notdefine
-	char* AP_getIP();
+	char* getIP();
 
 	// get MASK ifnset return Notdefine
-	char* AP_getMASK();
+	char* getMASK();
 
 	// get GATEWAY ifnset return Notdefine
-	char* AP_getGATEWAY();
-
-	char* AP_getNOTE();
+	char* getGATEWAY();
 
 	// Buffer print of setted values into static section
 	char* AP_Bprint();
+
+	uint8_t* _getIP();
+
+	uint8_t* _getMASK();
+
+	uint8_t* _getGATEWAY();
 
 
 	/**************************** STATION MODE *******************************/
@@ -116,22 +110,43 @@ public:
 	// return number of connections
 	uint8_t STATION_getNumOfConnection();
 
-	private:
+	/**************************** TEXT VARIABLES *****************************/
 
-		EEPROM_M24512 eeprom;
-		LList staticValues;
-		LList dinamicValues;
+	char* STATION_Bprint();
 
-		// simple function for set static data into LList
-		uint8_t _setByINDEX(uint8_t index, char* str);
 
-		// simple function for get static data into LList
-		char* _getByINDEX(uint8_t index);
+	void Print();
 
-		// secure function for printing undefined notes
-		char* _not2stringIfExist(char* one);
+	EEPROM_24LC16B eeprom;
 
-	};
+private:
+
+	LList stationValues;
+
+	char name[SIZE_NAMEDEVICE+1];
+	char ssid[SIZE_SSID+1];
+	char password[SIZE_PASSWORD+1];
+	uint8_t ip[4];
+	uint8_t mask[4];
+	uint8_t gateway[4];
+
+	char output[17];
+
+	// simple function for set static data into LList
+	uint8_t _setByINDEX(uint8_t index, char* str);
+
+	// secure function for printing undefined notes
+	// retunr nondefine string if string is null
+	char* _not2stringIfExist(char* one);
+
+	// valide and decode string IP to array of uint8_t
+	// retunr 5 x uint8_t
+	// {(IP_1_byte),(IP_2_byte),(IP_3_byte),(IP_4_byte),(valide 1 or 0 for invalide)}
+	uint8_t* StringToIP(char* str);
+
+	char* IPToString(uint8_t* input);
+
+};
 
 
 

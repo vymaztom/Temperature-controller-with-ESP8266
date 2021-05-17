@@ -1,27 +1,41 @@
 #include "webFramework.h"
+#include "WebTextVariables.h"
 #include "ProjectConfig.h"
 
-webFramework::webFramework(Config* object):server(WWW_SERVER_PORT){
+
+webFramework::webFramework(Config* object, Controller* cont):server(WWW_SERVER_PORT){
 	config = object;
+	control = cont;
+	//eeprom.begin();
 }
 
 
 // Replaces placeholder with LED state value
 String webFramework::processor(const String& var){
-	if(var == "STATE"){
-		String ledState;
-		if(digitalRead(PIN_RELE)){
-			digitalWrite(PIN_RELE, 0);
-			ledState = "OFF";
-		}
-		else{
-			digitalWrite(PIN_RELE, 1);
-			ledState = "ON";
-		}
-		//Serial.print(ledState);
-		return ledState;
+	char* input = (char*)var.c_str();
+	String ret = String();
+	if(input[0] == 't'){
+		uint8_t value = char2uint8_t(input+1);
+		char* str = WebTextVariable[language][value];
+		//char* str = config->textValues_get(value, language);
+		ret = String(str);
 	}
-	return String();
+	if(input[0] == 's'){
+		if(input[1] == '0'){
+			ret = String(config->getNAME());
+		}else if(input[1] == '1'){
+			ret = String(config->getIP());
+		}else if(input[1] == '2'){
+			ret = String(config->getMASK());
+		}else if(input[1] == '3'){
+			ret = String(config->getGATEWAY());
+		}else if(input[1] == '4'){
+			ret = String(config->getSSID());
+		}else if(input[1] == '5'){
+			ret = String(config->getPASS());
+		}
+	}
+	return ret;
 }
 
 
@@ -34,16 +48,37 @@ void webFramework::begin(){
 		return;
 	}
 
+	/***************************** LINKS INTO FILES **************************/
 
 	// Route to load style.css file
 	server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
 		request->send(SPIFFS, "/style.css", "text/css");
 	});
 
+	// Route to load javaScript.js file
+	server.on("/javaScript.js", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(SPIFFS, "/javaScript.js", "text/javascript");
+	});
+
+
+	// Route to load javaScript.js file
+	server.on("/dopyo.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(SPIFFS, "/dopyo.min.js", "text/javascript");
+	});
+
+	/****************************** WEB PAGES ********************************/
 
 	// Route for root / web page
-	//server.on("/", HTTP_GET, handleRequest_index);
 	server.on("/", HTTP_GET, WF(handleRequest_index));
+	server.on("/index", HTTP_GET, WF(handleRequest_index));
+	server.on("/index.html", HTTP_GET, WF(handleRequest_index));
+
+	// Route to config page
+	server.on("/config", HTTP_GET, WF(handleRequest_config));
+	server.on("/config.html", HTTP_GET, WF(handleRequest_config));
+
+
+	/****************************** ACTIONS **********************************/
 
 
 	// Route to set GPIO to HIGH
@@ -54,16 +89,44 @@ void webFramework::begin(){
 	//server.on("/off", HTTP_GET, handleRequest_index);
 	server.on("/off", HTTP_GET, WF(handleRequest_index));
 
+	// Route to config page
+	server.on("/config/save", HTTP_ANY, WF(handleRequest_configSave));
 
-	//server.on("/config", HTTP_GET, handleRequest_config);
-	server.on("/config", HTTP_GET, WF(handleRequest_config));
+	server.on("/config/text/save", HTTP_ANY, WF(handleRequest_TextSave));
 
-	server.on("/wifiConfig_JSON", HTTP_GET, WF(handleRequest_wifiConfig_JSON));
+	server.on("/config/text/remove", HTTP_ANY, WF(handleRequest_TextRemove));
+
+	server.on("/setDATA", HTTP_ANY, WF(handleRequest_setDATA));
+
+	server.on("/getTemperatureData", HTTP_ANY, WF(handleRequest_getTemperatureData));
+
+	server.on("/getLedData", HTTP_ANY, WF(handleRequest_getLedData));
+
+	server.on("/save", HTTP_ANY, WF(handleRequest_save));
+	server.on("/load", HTTP_ANY, WF(handleRequest_load));
+
+	/************************* PAGES FOR GET JSON ****************************/
+
+
+	server.on("/wifiSTATION_JSON", HTTP_POST, WF(handleRequest_wifiSTATION_JSON));
+
+	/*
+	server.on("/TemperatureData", HTTP_ANY, WF(handleRequest_TemperatureData));
+
+	server.on("/TemperatureLabel", HTTP_ANY, WF(handleRequest_LabelData));
+	*/
 
 
 	// Start server
 	server.begin();
 }
+
+
+/*******************************************************************************
+
+							HANDLERE FUNCTIONS
+
+*******************************************************************************/
 
 
 
@@ -73,41 +136,187 @@ void webFramework::handleRequest_index(AsyncWebServerRequest *request){
 }
 
 
-//http://192.168.0.227/config?a=1
 void webFramework::handleRequest_config(AsyncWebServerRequest *request){
-	int params = request->params();
-	for(int i=0;i<params;i++){
-		AsyncWebParameter* p = request->getParam(i);
-		if(p->isFile()){ //p->isPost() is also true
-			Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-		} else if(p->isPost()){
-			Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-		} else {
-			Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-		}
-	}
-	//request->send(SPIFFS, "/index.html", String(), false, WF(processor));
-	request->redirect("/login");
+	request->send(SPIFFS, "/config.html", String(), false, WF(processor));
 }
 
 
-void webFramework::handleRequest_wifiConfig_JSON(AsyncWebServerRequest *request){
-	String json = "[";
-	bool isFirtst = true;
-	//for(uint8_t i = 0 ; i < config->getSize() ; ++i){
-	for(uint8_t i = 0 ; i < 10 ; ++i){
-		//char* one = config->get((uint8_t)i);
-		char* one = NULL;
-		if(one != NULL){
-			if(!isFirtst) json += ",";
-			isFirtst = false;
-			json += "{";
-			Serial.printf("kind: %s, data:%s\n", String(i).c_str(), String(one).c_str());
-			json += "\"kind\":"+String(i);
-			json += ",\"data\":\""+String(one)+"\"";
-			json += "}";
+//http://192.168.0.227/config?a=1
+void webFramework::handleRequest_configSave(AsyncWebServerRequest *request){
+	int params = request->params();
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(p->isPost()){
+			if(strcmp(p->name().c_str(), "name") == 0){
+				config->setNAME((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "ip") == 0){
+				config->setIP((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "mask") == 0){
+				config->setMASK((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "gate") == 0){
+				config->setGATEWAY((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "ssid") == 0){
+				config->setSSID((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "pass") == 0){
+				config->setPASS((char*)p->value().c_str());
+			}
 		}
 	}
-	json += "]";
+
+	request->redirect("/config");
+}
+
+
+void webFramework::handleRequest_TextSave(AsyncWebServerRequest *request){
+	int params = request->params();
+	uint8_t num = 0;
+	char* ret = NULL;
+	char* ret2 = NULL;
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(p->isPost()){
+			Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+			if(p->name().c_str()[0] == 'n'){
+				num = char2uint8_t((char*)p->value().c_str());
+			}
+			if(p->name().c_str()[0] == 't'){
+				ret = (char*)p->value().c_str();
+			}
+			if(p->name().c_str()[0] == '2'){
+				ret2 = (char*)p->value().c_str();
+			}
+		}
+	}
+
+	request->redirect("/config");
+}
+
+void webFramework::handleRequest_TextRemove(AsyncWebServerRequest *request){
+	Serial.printf("Handle remove\n");
+	int params = request->params();
+	uint8_t index = 0;
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(p->isPost()){
+			Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+			if(p->name().c_str()[0] == 'i'){
+				index = char2uint8_t((char*)p->value().c_str());
+			}
+		}
+	}
+
+	request->redirect("/config");
+}
+
+void webFramework::handleRequest_wifiSTATION_JSON(AsyncWebServerRequest *request){
+	String json = String(config->STATION_getConnectionJSON());
 	request->send(200, "text/json", json);
+}
+
+
+void webFramework::handleRequest_save(AsyncWebServerRequest *request){
+	config->save();
+	request->redirect("/config");
+}
+
+void webFramework::handleRequest_load(AsyncWebServerRequest *request){
+	config->load();
+	request->redirect("/config");
+}
+/*
+void webFramework::handleRequest_TemperatureData(AsyncWebServerRequest *request){
+	String json = String(control->getTemperatureJSON());
+	request->send(200, "text/json", json);
+}
+
+
+void webFramework::handleRequest_LabelData(AsyncWebServerRequest *request){
+	String json = String(control->getLabelsJSON());
+	request->send(200, "text/json", json);
+}
+*/
+
+/*
+
+*/
+
+
+
+void webFramework::handleRequest_setDATA(AsyncWebServerRequest *request){
+	int params = request->params();
+	uint8_t index = 0;
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(!p->isPost() && !p->isFile()){
+			if(strcmp(p->name().c_str(), "temperature") == 0){
+				control->setSetedTemeperature(p->value().toFloat());
+			}
+			if(strcmp(p->name().c_str(), "hysteresis") == 0){
+				control->setSetedHysterez(p->value().toFloat());
+			}
+			if(strcmp(p->name().c_str(), "active") == 0){
+				if(strcmp(p->value().c_str(), "true") == 0){
+					active = 1;
+				}else{
+					active = 0;
+				}
+			}
+		}
+	}
+	request->redirect("/index");
+}
+
+void webFramework::handleRequest_getTemperatureData(AsyncWebServerRequest *request){
+	String json = String(control->getSetedDataJSON());
+	request->send(200, "text/json", json);
+}
+
+void webFramework::handleRequest_getLedData(AsyncWebServerRequest *request){
+	String json = "[{";
+	if(status_green){
+		json += "\"color1\":\"#5cb85c\",";
+	}else{
+		json += "\"color1\":\"white\",";
+	}
+	if(status_yellow){
+		json += "\"color2\":\"orange\",";
+	}else{
+		json += "\"color2\":\"white\",";
+	}
+	if(status_red){
+		json += "\"color3\":\"red\",";
+	}else{
+		json += "\"color3\":\"white\",";
+	}
+	json += "\"text1\":\""+String(WebTextVariable[language][17]) + "\",";
+	json += "\"text2\":\""+String(WebTextVariable[language][18]) + "\",";
+	json += "\"text3\":\""+String(WebTextVariable[language][19]) + "\"";
+
+	json += "}]";
+	request->send(200, "text/json", json);
+}
+
+/*******************************************************************************
+
+							TEXT DECODE FUNCTIONS
+
+*******************************************************************************/
+
+uint16_t webFramework::char2uint8_t(char* str){
+	uint16_t ret = 0;
+	for(uint8_t i = 0 ; i < strlen(str) ; i++){
+		if((str[i] >= '0')&&(str[i] <= '9')){
+			ret *= 10;
+			ret += str[i] - 48;
+		}else{
+			ret = 256;
+			return ret;
+		}
+	}
+	return ret;
 }

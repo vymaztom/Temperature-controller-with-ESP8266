@@ -1,4 +1,4 @@
-19007017385709788
+19005400187275920
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -9428,6 +9428,13 @@ DSUB-62-HD_Male_Vertical_P2.41x1.98mm_MountingHoles
 0
 64
 63
+Connector_ECE
+ETB520111200Z
+
+
+0
+12
+12
 Connector_FFC-FPC
 Hirose_FH12-6S-0.5SH_1x06-1MP_P0.50mm_Horizontal
 Hirose FH12, FFC/FPC connector, FH12-6S-0.5SH, 6 Pins per row (https://www.hirose.com/product/en/products/FH12/FH12-24S-0.5SH(55)/), generated with kicad-footprint-generator
@@ -46998,13 +47005,6 @@ ACDC-Converter 3W THT HiLink board mount module
 4
 4
 Converter_ACDC
-Converter_ACDC_MYRRA_47162
-ACDC-Converter, 3W, HiLink, HLK-PMxx, THT, http://www.hlktech.net/product_detail.php?ProId=54
-ACDC-Converter 3W THT HiLink board mount module
-0
-4
-4
-Converter_ACDC
 Converter_ACDC_MeanWell_IRM-02-xx_SMD
 ACDC-Converter, 3W, Meanwell, IRM-02, SMD, https://www.meanwell.com/Upload/PDF/IRM-02/IRM-02-SPEC.PDF
 ACDC-Converter 3W
@@ -77759,13 +77759,6 @@ Symbol
 WEEE-Logo_28.1x40mm_SilkScreen
 Waste Electrical and Electronic Equipment Directive
 Logo WEEE
-0
-0
-0
-Symbol
-bear_vyma
-
-
 0
 0
 0
