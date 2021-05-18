@@ -21,6 +21,23 @@ void Config::begin(){
 	ConsolePrint("CHIP info FREE HEAP", (String(ESP.getFreeHeap()) + " B").c_str());
 	ConsolePrint("CHIP info FREE CONST. STACK", (String(ESP.getFreeContStack()) + " B").c_str());
 	ConsolePrint("CHIP info real FLASH size", (String(ESP.getFlashChipRealSize()) + " B").c_str());
+
+
+	/***************************************************************************/
+
+	setNAME("esp8266");
+	setSSID("ESP8266");
+	setPASS("rootroot");
+	setIP("192.168.0.1");
+	setMASK("255.255.255.0");
+	setGATEWAY("192.168.0.1");
+
+
+	STATION_addConnection("PJTKV", "abeceda1");
+	STATION_addConnection("UPC_2G", "Ab9876543210");
+
+
+	/***************************************************************************/
 }
 
 
@@ -205,9 +222,33 @@ char* Config::STATION_getConnectionJSON(){
 }
 
 // remove connection from structure by position
-uint8_t Config::STATION_removeConnection(uint8_t index){
+void Config::STATION_removeConnection(uint8_t index){
 	stationValues.remove(index);
 }
+
+void Config::STATION_removeConnectionByName(char* str){
+	for(uint8_t i = 0 ; i <= stationValues.getMaxIndex() ; i++){
+		note_t* one = stationValues.get_note(i);
+		if(one != NULL){
+			if(strcmp(one->value1, str) == 0){
+				stationValues.remove(i);
+			}
+		}
+	}
+}
+
+uint8_t Config::STATION_isInList(char* str){
+	for(uint8_t i = 0 ; i <= stationValues.getMaxIndex() ; i++){
+		note_t* one = stationValues.get_note(i);
+		if(one != NULL){
+			if(strcmp(one->value1, str) == 0){
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 
 // return number of connections
 uint8_t Config::STATION_getNumOfConnection(){
@@ -227,8 +268,9 @@ char* Config::STATION_Bprint(){
 
 // sava structures into eeprom
 void Config::save(){
-	uint8_t offset = 0;
 
+	// PAGE 1
+	uint8_t offset = 0;
 	eeprom.write(PAGE_1, &offset, getNAME());
 	eeprom.write(PAGE_1, &offset, getSSID());
 	eeprom.write(PAGE_1, &offset, getPASS());
@@ -236,14 +278,28 @@ void Config::save(){
 	eeprom.write_ip(PAGE_1, &offset, _getMASK());
 	eeprom.write_ip(PAGE_1, &offset, _getGATEWAY());
 
-	eeprom.printPageMemory(PAGE_1);
+
+	// PAGE 2
+	offset = 0;
+	eeprom._eeprom_write(PAGE_2, offset, STATION_getNumOfConnection());
+	offset++;
+	for(uint8_t i = 0 ; i <= stationValues.getMaxIndex() ; i++){
+		note_t* one = stationValues.get_note(i);
+		if(one != NULL){
+			eeprom.write(PAGE_2, &offset, one->value1);
+			eeprom.write(PAGE_2, &offset, one->value2);
+		}
+	}
+
+	eeprom.printPageMemory(PAGE_2);
 
 }
 
 // load structures into eeprom
 void Config::load(){
-	uint8_t offset = 0;
 
+	// PAGE 1
+	uint8_t offset = 0;
 	setNAME(eeprom.read(PAGE_1, &offset));
 	setSSID(eeprom.read(PAGE_1, &offset));
 	setPASS(eeprom.read(PAGE_1, &offset));
@@ -251,9 +307,20 @@ void Config::load(){
 	_setMASK(eeprom.read_ip(PAGE_1, &offset));
 	_setGATEWAY(eeprom.read_ip(PAGE_1, &offset));
 
-	Serial.print(AP_Bprint());
 
-	eeprom.printPageMemory(PAGE_1);
+	// PAGE 2
+	offset = 0;
+	uint8_t size = eeprom._eeprom_read(PAGE_2, offset);
+	offset++;
+	for(uint8_t i = 0 ; i < size ; i++){
+		char* name = eeprom.read(PAGE_2, &offset);
+		char* pass = eeprom.read(PAGE_2, &offset);
+		STATION_addConnection(name, pass);
+	}
+
+
+	Serial.println(STATION_getConnectionCONSLE());
+
 
 }
 
@@ -302,7 +369,6 @@ uint8_t* Config::StringToIP(char* str){
 	}else{
 		ret[4] *= 0;
 	}
-	Serial.printf("%u.%u.%u.%u -> %u\n",ret[0],ret[1],ret[2],ret[3],ret[4]);
 	return ret;
 }
 
@@ -314,7 +380,6 @@ char* Config::IPToString(uint8_t* input){
 	ret += String(input[2]) + ".";
 	ret += String(input[3]) + "\0";
 
-	Serial.printf("%s\n", ret.c_str());
 	char* str = (char*)ret.c_str();
 	memcpy(output, str, strlen(str)+1);
 	return output;

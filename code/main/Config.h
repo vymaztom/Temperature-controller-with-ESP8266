@@ -24,8 +24,14 @@
 #define I_AP_PASS 5
 #define I_AP_NOTE 6
 
+#define MAX_SCAN 10
 
 
+typedef struct WiFiNote{
+	char SSID[SIZE_SSID+1];
+	char SECURE[20];
+	int RSSI;
+}WiFiNote_t;
 
 
 class Config {
@@ -105,7 +111,11 @@ public:
 	char* STATION_getConnectionJSON();
 
 	// remove connection from structure by position
-	uint8_t STATION_removeConnection(uint8_t index);
+	void STATION_removeConnection(uint8_t index);
+
+	void STATION_removeConnectionByName(char* str);
+
+	uint8_t STATION_isInList(char* str);
 
 	// return number of connections
 	uint8_t STATION_getNumOfConnection();
@@ -117,11 +127,13 @@ public:
 
 	void Print();
 
-	EEPROM_24LC16B eeprom;
+	uint8_t WifiNets_index;
+	WiFiNote_t WifiNets[MAX_SCAN];
 
+	EEPROM_24LC16B eeprom;
+	LList stationValues;
 private:
 
-	LList stationValues;
 
 	char name[SIZE_NAMEDEVICE+1];
 	char ssid[SIZE_SSID+1];
@@ -129,6 +141,7 @@ private:
 	uint8_t ip[4];
 	uint8_t mask[4];
 	uint8_t gateway[4];
+
 
 	char output[17];
 

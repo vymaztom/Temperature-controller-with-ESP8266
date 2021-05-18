@@ -3,11 +3,14 @@
 
 
 WifiModes::WifiModes(Config* conf){
+	config = conf;
 	seted_mode = digitalRead(PIN_BUTTON);
 }
 
 void WifiModes::begin(){
 	ConsolePrintMarkLine();
+	wifiScan();
+
 
 	pinMode(PIN_LED_GREEN, OUTPUT);
 	pinMode(PIN_LED_YELLOW, OUTPUT);
@@ -49,19 +52,22 @@ void WifiModes::loop(){
 }
 
 void WifiModes::setAPmode(){
-	const char *ssid_ = "ESP8266";
-	const char *password_ = "rootroot";
 
-	IPAddress Ip(192, 168, 2, 1);
-	IPAddress NMask(255, 255, 255, 0);
+	uint8_t* ipadr = config->_getIP();
+	uint8_t* mask = config->_getMASK();
+	uint8_t* gateway = config->_getGATEWAY();
+
+	IPAddress Ip(ipadr[0], ipadr[1], ipadr[2], ipadr[3]);
+	IPAddress NMask(mask[0], mask[1], mask[2], mask[3]);
+	IPAddress Gate(gateway[0], gateway[1], gateway[2], gateway[3]);
 
 	WiFi.mode(WIFI_AP);
-  	WiFi.softAPConfig(Ip, Ip, NMask);
+  	WiFi.softAPConfig(Ip, Gate, NMask);
 
 
-	WiFi.softAP(ssid_, password_ , findBestChanel(), 0, 4);
+	WiFi.softAP(config->getSSID(), config->getPASS(), findBestChanel(), 0, 4);
 
-	ConsolePrint("WifiConfig AP MODE SSID", ssid_);
+	ConsolePrint("WifiConfig AP MODE SSID", config->getSSID());
 	char bufIP[40];
 	IPAddress ip = WiFi.softAPIP();
 	sprintf(bufIP, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -75,9 +81,12 @@ void WifiModes::setStationMode(){
 
 	WiFi.mode(WIFI_STA);
 
-	wifiMulti.addAP("PJTKV", "abeceda1");
-	wifiMulti.addAP("UPC_2G", "Ab9876543210");
-
+	for(uint8_t i = 0 ; i <= config->stationValues.getMaxIndex() ; i++){
+		note_t* one = config->stationValues.get_note(i);
+		if(one != NULL){
+			wifiMulti.addAP(one->value1, one->value2);
+		}
+	}
 
 	ConsolePrint("WifiConfig Multi Wifi list connecting", "RUN");
 
@@ -95,36 +104,36 @@ void WifiModes::setStationMode(){
 }
 
 void WifiModes::wifiScan(){
-	// Set WiFi to station mode and disconnect from an AP if it was previously connected
+
 	WiFi.mode(WIFI_STA);
 	WiFi.disconnect();
-	Serial.println("scan start");
-	uint8_t chanels[14];
-	for(uint8_t i = 0 ; i < 14 ; i++){
-		chanels[i] = 0;
-	}
-	// WiFi.scanNetworks will return the number of networks found
+	config->WifiNets_index = 0;
+
+
 	int n = WiFi.scanNetworks();
-	Serial.println("scan done");
-	if (n == 0) {
-		Serial.println("no networks found");
-	} else {
-		Serial.print(n);
-		Serial.println(" networks found");
-		for (int i = 0; i < n; ++i) {
-			// Print SSID and RSSI for each network found
-			Serial.print(i + 1);
-			Serial.print(": ");
-			Serial.print(WiFi.SSID(i));
-			Serial.print(" (");
-			Serial.print(WiFi.RSSI(i));
-			Serial.print(")");
-			Serial.print((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " NOENCRYPTION " : " PASSED ");
-			Serial.println(WiFi.channel(i));
-			delay(10);
+
+	for(int i = 0; i < n; ++i){
+		memcpy(config->WifiNets[config->WifiNets_index].SSID, String(WiFi.SSID(i)).c_str(), strlen(String(WiFi.SSID(i)).c_str())+1);
+		config->WifiNets[config->WifiNets_index].RSSI = WiFi.RSSI(i);
+		switch(WiFi.encryptionType(i)){
+			case 2:
+				memcpy(config->WifiNets[config->WifiNets_index].SECURE, "TKIP (WPA)", 11);
+				break;
+			case 5:
+				memcpy(config->WifiNets[config->WifiNets_index].SECURE, "WEP", 4);
+				break;
+			case 4:
+				memcpy(config->WifiNets[config->WifiNets_index].SECURE, "CCMP (WPA)", 11);
+				break;
+			case 7:
+				memcpy(config->WifiNets[config->WifiNets_index].SECURE, "NONE", 5);
+				break;
+			case 8:
+				memcpy(config->WifiNets[config->WifiNets_index].SECURE, "AUTO", 5);
+				break;
 		}
+		config->WifiNets_index++;
 	}
-	Serial.println("");
 }
 
 int WifiModes::findBestChanel(){

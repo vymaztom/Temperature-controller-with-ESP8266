@@ -45,7 +45,6 @@ void EEPROM_24LC16B::write(uint8_t addr_i2c, uint8_t* addr, char* data){
 	uint16_t len = strlen(data);
 	if((*addr + len + 1) <= 255){
 		_eeprom_write(addr_i2c, *addr, (uint8_t)len);
-		Serial.printf("Size: %u\n", len);
 		(*addr)++;
 		for(uint8_t i = 0 ; i < len ; i++){
 			_eeprom_write(addr_i2c, *addr, (uint8_t)data[i]);
@@ -60,7 +59,6 @@ char* EEPROM_24LC16B::read(uint8_t addr_i2c, uint8_t* addr){
 	char* ret = (char*)malloc(sizeof(char)*(size+1));
 	for(uint8_t i = 0 ; i < size ; i++){
 		ret[i] = (char)_eeprom_read(addr_i2c, *addr);
-		Serial.printf("read: %c\n", (uint8_t)ret[i]);
 		(*addr)++;
 	}
 	ret[size] = '\0';
@@ -104,22 +102,41 @@ uint8_t EEPROM_24LC16B::_eeprom_read(uint8_t chip_addr, uint8_t addr){
 	uint8_t ret = 0;
 	myWire.beginTransmission((int)chip_addr);
 	myWire.write((byte)addr);
-	if(myWire.endTransmission() != 0){
-		ConsolePrint("EEPROM  read", "ERROR");
-	}
+	myWire.endTransmission();
 	myWire.requestFrom((int)chip_addr, 1);
 	if(myWire.available() == 1){
 		ret = (uint8_t)myWire.read();
 	}else{
-		ConsolePrint("EEPROM  read", "NO DATA");
+		delay(10);
+		return _eeprom_read_rec(chip_addr, addr, 0, 5);
 	}
 	delay(10);
 	return ret;
 }
 
+// Read data from eeprom by address and selected i2c address
+uint8_t EEPROM_24LC16B::_eeprom_read_rec(uint8_t chip_addr, uint8_t addr, uint8_t deep, uint8_t maxdeep){
+	if(deep < maxdeep){
+		myWire.beginTransmission((int)chip_addr);
+		myWire.write((byte)addr);
+		myWire.endTransmission();
+		myWire.requestFrom((int)chip_addr, 1);
+		if(myWire.available() == 1){
+			return (uint8_t)myWire.read();
+		}else{
+			delay(10);
+			return _eeprom_read_rec(chip_addr, addr, deep+1, maxdeep);
+		}
+	}else{
+		ConsolePrint("EEPROM  read", "ERROR");
+		ConsolePrint("EEPROM  read", "NO DATA");
+	}
+	return 0;
+}
+
+
 // Write data by address into eeprom selected by address
 void EEPROM_24LC16B::_eeprom_write(uint8_t chip_addr, uint8_t addr, uint8_t data){
-	Serial.printf("addr: %i\n", (int)addr);
 	myWire.beginTransmission(chip_addr);
 	myWire.write((byte)addr);
 	myWire.write((byte)data);

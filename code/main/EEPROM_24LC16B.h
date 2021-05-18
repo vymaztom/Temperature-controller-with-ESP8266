@@ -40,15 +40,17 @@ public:
 
 	uint8_t* read_ip(uint8_t addr_i2c, uint8_t* addr);
 
-private:
-
-	TwoWire myWire;
-
 	// Read data from eeprom by address and selected i2c address
 	void _eeprom_write(uint8_t chip_addr, uint8_t addr, uint8_t data);
 
 	// Write data by address into eeprom selected by address
 	uint8_t _eeprom_read(uint8_t chip_addr, uint8_t addr);
+
+	uint8_t _eeprom_read_rec(uint8_t chip_addr, uint8_t addr, uint8_t deep, uint8_t maxdeep);
+
+private:
+
+	TwoWire myWire;
 
 	uint8_t _eeprom_write_rec(uint8_t chip_addr, uint8_t addr, uint8_t data, uint8_t deep, uint8_t maxdeep);
 

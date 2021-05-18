@@ -98,3 +98,38 @@ function indexLoop(){
 		document.getElementById("switch").checked = false;
 	}
 }
+
+function addNoteIntoWifiConnections(SSID, RSSI){
+	var one = document.getElementById("WIFIDATA");
+
+	var note = document.createElement("DIV");
+	note.className = "wifiNote";
+
+	var a = document.createElement("DIV");
+	a.className = "wifiSubNote";
+	var p1 = document.createElement("p");
+	p1.appendChild(document.createTextNode("SSID: " + String(SSID)));
+	a.appendChild(p1);
+	var p2 = document.createElement("p");
+	p2.appendChild(document.createTextNode("RSSI: " + String(RSSI) + " dBm"));
+	a.appendChild(p2);
+	a.setAttribute('style', 'width: 80%;');
+
+	var b = document.createElement("DIV");
+	b.className = "wifiSubNote";
+	var img = document.createElement('img');
+    img.src = "cross.png";
+	img.addEventListener('click',  (event) => {
+		sendGET("/WifiNets?remove=" + String(SSID));
+		location.reload();
+    });
+	b.appendChild(img);
+	b.setAttribute('style', 'width: 10%;');
+
+
+	note.appendChild(a);
+	note.appendChild(b);
+
+	one.appendChild(note);
+
+}

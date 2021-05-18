@@ -48,6 +48,10 @@ private:
 	void handleRequest_getTemperatureData(AsyncWebServerRequest *request);
 	void handleRequest_getLedData(AsyncWebServerRequest *request);
 
+	void handleRequest_jsonWifiNets(AsyncWebServerRequest *request);
+	void handleRequest_WifiNets(AsyncWebServerRequest *request);
+
+
 	uint16_t char2uint8_t(char* str);
 };
 

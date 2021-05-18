@@ -51,21 +51,10 @@
 	</div>
 	<div class="contend blue">
 		<h3 class="left" >WIFI connection</h3>
-		<div class="">
-			<div class="wifiNote">
-				<div class="wifiSubNote" style="width:80%;">
-					<p>Name</p>
-					<p>RSSI: -58dBm password: WPA2</p>
-				</div>
-				<div class="wifiSubNote" style="width:10%;">
-					<img src="cross.png">
-				</div>
-			</div>
-			<div class="wifiNote">
+		<div id="WIFIDATA">
 
-			</div>
 		</div>
-		<form action="/config/addWifi" method="post">
+		<form action="/WifiNets" method="post">
 			<label class="left-float" for="s_wifiAdd">%ln1%:</label>
 			<input type="text" id="s_wifiAdd" name="wifiAdd" value="">
 			<br>
@@ -111,5 +100,16 @@
 			<input type="submit" class="contend green" value="Load">
 		</form>
 	</div>
+
+
+	<script type="text/javascript">
+		var jsonWifiNets = getJSON("jsonWifiNets");
+		jsonWifiNets["data"].forEach(i =>
+			addNoteIntoWifiConnections(i["SSID"], i["RSSI"])
+		);
+
+	</script>
+
+
 </body>
 </html>

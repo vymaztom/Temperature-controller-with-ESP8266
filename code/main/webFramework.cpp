@@ -62,8 +62,8 @@ void webFramework::begin(){
 
 
 	// Route to load javaScript.js file
-	server.on("/dopyo.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
-		request->send(SPIFFS, "/dopyo.min.js", "text/javascript");
+	server.on("/cross.png", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(SPIFFS, "/cross.png", "image/png");
 	});
 
 	/****************************** WEB PAGES ********************************/
@@ -104,6 +104,11 @@ void webFramework::begin(){
 
 	server.on("/save", HTTP_ANY, WF(handleRequest_save));
 	server.on("/load", HTTP_ANY, WF(handleRequest_load));
+
+
+
+	server.on("/jsonWifiNets", HTTP_ANY, WF(handleRequest_jsonWifiNets));
+	server.on("/WifiNets", HTTP_ANY, WF(handleRequest_WifiNets));
 
 	/************************* PAGES FOR GET JSON ****************************/
 
@@ -300,6 +305,73 @@ void webFramework::handleRequest_getLedData(AsyncWebServerRequest *request){
 	json += "}]";
 	request->send(200, "text/json", json);
 }
+
+void webFramework::handleRequest_jsonWifiNets(AsyncWebServerRequest *request){
+	String json = "{";
+
+	uint8_t Isfirst = true;
+	uint8_t IsAddRSSI = false;
+
+	json += "\"data\":[";
+	for(uint8_t i = 0 ; i <= config->stationValues.getMaxIndex() ; i++){
+		note_t* one = config->stationValues.get_note(i);
+		if(one != NULL){
+			if(Isfirst){
+				Isfirst = false;
+			}else{
+				json += ",";
+			}
+			json += "{";
+			json += "\"SSID\":\"" + String(one->value1) + "\",";
+			IsAddRSSI = false;
+			for(uint8_t j = 0; j < config->WifiNets_index; j++){
+				if(strcmp(one->value1, config->WifiNets[j].SSID) == 0){
+					json += "\"RSSI\":\"" + String(config->WifiNets[j].RSSI) + "\"";
+					IsAddRSSI = true;
+					break;
+				}
+			}
+			if(!IsAddRSSI){
+				json += "\"RSSI\":\"None\"";
+			}
+			json += "}";
+		}
+	}
+
+
+	json += "]}";
+	request->send(200, "text/json", json);
+}
+
+void webFramework::handleRequest_WifiNets(AsyncWebServerRequest *request){
+	int params = request->params();
+	uint8_t index = 0;
+
+	char* name = NULL;
+	char* pass = NULL;
+
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(!p->isPost() && !p->isFile()){
+			if(strcmp(p->name().c_str(), "remove") == 0){
+				config->STATION_removeConnectionByName((char*)p->value().c_str());
+			}
+		}
+		if(p->isPost()){
+			if(strcmp(p->name().c_str(), "wifiAdd") == 0){
+				name = (char*)p->value().c_str();
+			}
+			if(strcmp(p->name().c_str(), "passAdd") == 0){
+				pass = (char*)p->value().c_str();
+			}
+		}
+	}
+	if((name != NULL)&&(pass != NULL)){
+		config->STATION_addConnection(name, pass);
+	}
+	request->redirect("/config");
+}
+
 
 /*******************************************************************************
 
