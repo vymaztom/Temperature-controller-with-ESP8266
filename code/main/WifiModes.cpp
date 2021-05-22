@@ -5,6 +5,7 @@
 WifiModes::WifiModes(Config* conf){
 	config = conf;
 	seted_mode = digitalRead(PIN_BUTTON);
+	config->setWifiMode(seted_mode);
 }
 
 void WifiModes::begin(){
@@ -31,7 +32,7 @@ void WifiModes::begin(){
 
 	ConsolePrintMarkLine();
 	// Start the mDNS responder for esp8266.local
-	if(MDNS.begin("esp8266")){
+	if(MDNS.begin(config->getNAME())){
 		MDNS.addService("http", "tcp", 80);
 		ConsolePrint("mDNS responder started", "OK");
 	}else{

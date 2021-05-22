@@ -51,7 +51,7 @@ public:
 private:
 
 	TwoWire myWire;
-
+	uint8_t retIP[4];
 	uint8_t _eeprom_write_rec(uint8_t chip_addr, uint8_t addr, uint8_t data, uint8_t deep, uint8_t maxdeep);
 
 };

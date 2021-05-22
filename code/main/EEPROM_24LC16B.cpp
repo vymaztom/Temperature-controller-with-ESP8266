@@ -38,7 +38,7 @@ void EEPROM_24LC16B::printPageMemory(uint8_t addr_i2c){
 			Serial.printf("\n");
 		}
 	}
-
+	Serial.printf("\n");
 }
 
 void EEPROM_24LC16B::write(uint8_t addr_i2c, uint8_t* addr, char* data){
@@ -79,16 +79,16 @@ void EEPROM_24LC16B::write_ip(uint8_t addr_i2c, uint8_t* addr, uint8_t* data){
 }
 
 uint8_t* EEPROM_24LC16B::read_ip(uint8_t addr_i2c, uint8_t* addr){
-	uint8_t ret[4];
-	ret[0] = _eeprom_read(addr_i2c, *addr);
+	retIP[0] = _eeprom_read(addr_i2c, *addr);
 	(*addr)++;
-	ret[1] = _eeprom_read(addr_i2c, *addr);
+	retIP[1] = _eeprom_read(addr_i2c, *addr);
 	(*addr)++;
-	ret[2] = _eeprom_read(addr_i2c, *addr);
+	retIP[2] = _eeprom_read(addr_i2c, *addr);
 	(*addr)++;
-	ret[3] = _eeprom_read(addr_i2c, *addr);
+	retIP[3] = _eeprom_read(addr_i2c, *addr);
 	(*addr)++;
-	return ret;
+	Serial.println("EEPROM " + String(retIP[0]) + "." + String(retIP[1]) + "." + String(retIP[2]) + "." + String(retIP[3]));
+	return retIP;
 }
 
 /******************************************************************************

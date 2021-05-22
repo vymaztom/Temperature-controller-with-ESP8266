@@ -4,7 +4,9 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include <OneWire.h>
+#include <ESP8266WiFi.h>
 #include <DallasTemperature.h>
+#include <ThingSpeak.h>
 #include "ProjectConfig.h"
 #include "Config.h"
 #include "Buffer.h"
@@ -12,6 +14,10 @@
 
 extern char WebTextVariable[2][40][40];
 #define TIMER_DIFFERENT 1000
+
+
+
+
 
 
 class Controller {
@@ -43,6 +49,8 @@ public:
 
 private:
 
+	WiFiClient client_logger;
+
 	Config* config;
 
 	// DallasTemperature
@@ -52,6 +60,7 @@ private:
 
 	// timers
 	unsigned long startMillis;
+	unsigned long startMillis_Logger;
 	unsigned long counter;
 	Timer* _temperature_read;
 
@@ -59,6 +68,9 @@ private:
 	float _seted_temperature;
 	float _seted_temperature_hysterez;
 	uint8_t _status;
+
+
+
 
 
 	void _control();

@@ -31,6 +31,16 @@ input[type=text] {
 	font-size: 20px;
 }
 
+input[type=number] {
+	padding: 5px 0px;
+	margin: 5px 0;
+	font-size: 20px;
+}
+
+.fullsize{
+	width: 100%;
+}
+
 .left {
 	text-align: left;
 }
@@ -79,6 +89,8 @@ input[type=text] {
     padding-left: 10%;
 }
 
+
+
 input[type="range"] {
 	width:50%;
 	min-width: 250px;
@@ -98,7 +110,10 @@ input[type="range"]::-moz-range-track {
 	float:right;
 }
 
-
+.inputCenter{
+	width: 20%;
+	text-align: center;
+}
 /**************************** checkbox ****************************************/
 
 .onoff {
@@ -116,7 +131,7 @@ input[type="range"]::-moz-range-track {
 	text-indent: -9999px;
 	width: 60px;
 	height: 30px;
-	background: #008CBA;
+	background: #f44336;
 	display: inline-block;
 	border-radius: 30px;
 	position: relative;
@@ -135,7 +150,7 @@ input[type="range"]::-moz-range-track {
 }
 
 .onoff input:checked + label {
-	background: #f44336;
+	background: #32CD32;
 }
 
 .onoff input:checked + label:after {
@@ -169,4 +184,14 @@ body {
 	display: inline-block;
 	vertical-align: middle;
 	text-align: left;
+}
+
+.flag {
+	position: absolute;
+	margin-left: 83%;
+}
+
+.flag img {
+    cursor: pointer;
+
 }

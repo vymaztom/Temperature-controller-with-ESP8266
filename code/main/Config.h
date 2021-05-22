@@ -127,11 +127,31 @@ public:
 
 	void Print();
 
+	/**************************** LOGGER DATA *****************************/
+	void setTimerLogger(unsigned long input_seconds);
+
+	unsigned long getTimerLogger();
+
+	void setMyChanelNumber(unsigned long input);
+
+	unsigned long getMyChanelNumber();
+
+	void setApiKey(char* str);
+
+	char* getApiKey();
+
+	void setWifiMode(uint8_t value);
+
+	uint8_t getWifiMode();
+
 	uint8_t WifiNets_index;
 	WiFiNote_t WifiNets[MAX_SCAN];
+	uint8_t controllerOnOff;
+	uint8_t loggerOnOff;
 
 	EEPROM_24LC16B eeprom;
 	LList stationValues;
+
 private:
 
 
@@ -142,6 +162,11 @@ private:
 	uint8_t mask[4];
 	uint8_t gateway[4];
 
+
+	unsigned long TIMER_DIFFERENT_LOGER;
+	unsigned long myChannelNumber;
+	char myWriteAPIKey[30];
+	uint8_t wifiMode;
 
 	char output[17];
 

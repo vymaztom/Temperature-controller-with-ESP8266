@@ -24,7 +24,7 @@ void Config::begin(){
 
 
 	/***************************************************************************/
-
+	/*
 	setNAME("esp8266");
 	setSSID("ESP8266");
 	setPASS("rootroot");
@@ -36,6 +36,11 @@ void Config::begin(){
 	STATION_addConnection("PJTKV", "abeceda1");
 	STATION_addConnection("UPC_2G", "Ab9876543210");
 
+	*/
+	setTimerLogger(600000);
+	setMyChanelNumber(1365234);
+	setApiKey("RR68JA802JYI63K8");
+	load();
 
 	/***************************************************************************/
 }
@@ -278,6 +283,14 @@ void Config::save(){
 	eeprom.write_ip(PAGE_1, &offset, _getMASK());
 	eeprom.write_ip(PAGE_1, &offset, _getGATEWAY());
 
+	//save LOGGER
+	eeprom._eeprom_write(PAGE_1, offset, controllerOnOff);
+	offset++;
+	eeprom._eeprom_write(PAGE_1, offset, loggerOnOff);
+	offset++;
+	eeprom.write(PAGE_1, &offset, (char*)String(TIMER_DIFFERENT_LOGER).c_str());
+	eeprom.write(PAGE_1, &offset, (char*)String(myChannelNumber).c_str());
+	eeprom.write(PAGE_1, &offset, myWriteAPIKey);
 
 	// PAGE 2
 	offset = 0;
@@ -291,6 +304,7 @@ void Config::save(){
 		}
 	}
 
+	eeprom.printPageMemory(PAGE_1);
 	eeprom.printPageMemory(PAGE_2);
 
 }
@@ -308,6 +322,16 @@ void Config::load(){
 	_setGATEWAY(eeprom.read_ip(PAGE_1, &offset));
 
 
+	controllerOnOff = eeprom._eeprom_read(PAGE_1, offset);
+	offset++;
+	loggerOnOff = eeprom._eeprom_read(PAGE_1, offset);
+	offset++;
+	setTimerLogger((unsigned long)String(eeprom.read(PAGE_1, &offset)).toInt());
+	setMyChanelNumber((unsigned long)String(eeprom.read(PAGE_1, &offset)).toInt());
+	setApiKey(eeprom.read(PAGE_1, &offset));
+
+
+
 	// PAGE 2
 	offset = 0;
 	uint8_t size = eeprom._eeprom_read(PAGE_2, offset);
@@ -318,7 +342,7 @@ void Config::load(){
 		STATION_addConnection(name, pass);
 	}
 
-
+	Serial.println(AP_Bprint());
 	Serial.println(STATION_getConnectionCONSLE());
 
 
@@ -327,6 +351,47 @@ void Config::load(){
 
 void Config::Print(){
 	Serial.println(STATION_Bprint());
+}
+
+/******************************************************************************
+
+LOGGER FUNCTIONS
+
+******************************************************************************/
+
+void Config::setTimerLogger(unsigned long input_seconds){
+	TIMER_DIFFERENT_LOGER = input_seconds;
+}
+
+unsigned long Config::getTimerLogger(){
+	return TIMER_DIFFERENT_LOGER;
+}
+
+void Config::setMyChanelNumber(unsigned long input){
+	myChannelNumber = input;
+}
+
+unsigned long Config::getMyChanelNumber(){
+	return myChannelNumber;
+}
+
+void Config::setApiKey(char* str){
+	if(strlen(str)+1 <= 30){
+		memcpy(myWriteAPIKey, str, strlen(str)+1);
+	}
+}
+
+char* Config::getApiKey(){
+	return myWriteAPIKey;
+}
+
+
+void Config::setWifiMode(uint8_t value){
+	wifiMode = value;
+}
+
+uint8_t Config::getWifiMode(){
+	return wifiMode;
 }
 
 
@@ -369,6 +434,7 @@ uint8_t* Config::StringToIP(char* str){
 	}else{
 		ret[4] *= 0;
 	}
+	Serial.println("String to IP" + String(ret[0]) + "." + String(ret[1]) + "." + String(ret[2]) + "." + String(ret[3]));
 	return ret;
 }
 
@@ -381,6 +447,7 @@ char* Config::IPToString(uint8_t* input){
 	ret += String(input[3]) + "\0";
 
 	char* str = (char*)ret.c_str();
+	Serial.println("ip to string" + ret);
 	memcpy(output, str, strlen(str)+1);
 	return output;
 }

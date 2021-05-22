@@ -33,6 +33,12 @@ String webFramework::processor(const String& var){
 			ret = String(config->getSSID());
 		}else if(input[1] == '5'){
 			ret = String(config->getPASS());
+		}else if(input[1] == '6'){
+			ret = String(config->getMyChanelNumber());
+		}else if(input[1] == '7'){
+			ret = String(config->getApiKey());
+		}else if(input[1] == '8'){
+			ret = String(config->getTimerLogger()/1000);
 		}
 	}
 	return ret;
@@ -61,9 +67,21 @@ void webFramework::begin(){
 	});
 
 
-	// Route to load javaScript.js file
+	// Route to load png image
+	server.on("/icon.png", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(SPIFFS, "/icon.png", "image/png");
+	});
+
 	server.on("/cross.png", HTTP_GET, [](AsyncWebServerRequest *request){
 		request->send(SPIFFS, "/cross.png", "image/png");
+	});
+
+	server.on("/flag_0.png", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(SPIFFS, "/flag_0.png", "image/png");
+	});
+
+	server.on("/flag_1.png", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(SPIFFS, "/flag_1.png", "image/png");
 	});
 
 	/****************************** WEB PAGES ********************************/
@@ -101,6 +119,12 @@ void webFramework::begin(){
 	server.on("/getTemperatureData", HTTP_ANY, WF(handleRequest_getTemperatureData));
 
 	server.on("/getLedData", HTTP_ANY, WF(handleRequest_getLedData));
+
+	server.on("/indexlanguage", HTTP_ANY, WF(handleRequest_languageIndex));
+	server.on("/configlanguage", HTTP_ANY, WF(handleRequest_languageConfig));
+	server.on("/languageJSON", HTTP_ANY, WF(handleRequest_languageJSON));
+	server.on("/ChanelNumberJSON", HTTP_ANY, WF(handleRequest_ChanelNumberJSON));
+
 
 	server.on("/save", HTTP_ANY, WF(handleRequest_save));
 	server.on("/load", HTTP_ANY, WF(handleRequest_load));
@@ -169,6 +193,15 @@ void webFramework::handleRequest_configSave(AsyncWebServerRequest *request){
 			}
 			if(strcmp(p->name().c_str(), "pass") == 0){
 				config->setPASS((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "chanelnumber") == 0){
+				config->setMyChanelNumber((unsigned long)p->value().toInt());
+			}
+			if(strcmp(p->name().c_str(), "apikey") == 0){
+				config->setApiKey((char*)p->value().c_str());
+			}
+			if(strcmp(p->name().c_str(), "interval") == 0){
+				config->setTimerLogger((unsigned long)p->value().toInt()*1000);
 			}
 		}
 	}
@@ -275,6 +308,54 @@ void webFramework::handleRequest_setDATA(AsyncWebServerRequest *request){
 	}
 	request->redirect("/index");
 }
+
+void webFramework::handleRequest_languageConfig(AsyncWebServerRequest *request){
+	int params = request->params();
+	uint8_t index = 0;
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(!p->isPost() && !p->isFile()){
+			if(strcmp(p->name().c_str(), "language") == 0){
+				language = (uint8_t)p->value().toInt();
+			}
+		}
+	}
+	request->redirect("/config");
+}
+
+
+void webFramework::handleRequest_languageIndex(AsyncWebServerRequest *request){
+	int params = request->params();
+	uint8_t index = 0;
+	for(int i=0;i<params;i++){
+		AsyncWebParameter* p = request->getParam(i);
+		if(!p->isPost() && !p->isFile()){
+			if(strcmp(p->name().c_str(), "language") == 0){
+				language = (uint8_t)p->value().toInt();
+			}
+		}
+	}
+	request->redirect("/index");
+}
+
+void webFramework::handleRequest_languageJSON(AsyncWebServerRequest *request){
+	String json = "[{";
+	json += "\"language\":" + String(language) + ",";
+	json += "\"controllerOnOff\":" + String(config->controllerOnOff) + ",";
+	json += "\"loggerOnOff\":" + String(config->loggerOnOff);
+	json += "}]";
+	request->send(200, "text/json", json);
+}
+
+void webFramework::handleRequest_ChanelNumberJSON(AsyncWebServerRequest *request){
+	String json = "[{";
+	json += "\"ChanelNumber\":" + String(config->getMyChanelNumber()) + ",";
+	json += "\"WifiMode\":" + String(config->getWifiMode());
+	json += "}]";
+	request->send(200, "text/json", json);
+}
+
+
 
 void webFramework::handleRequest_getTemperatureData(AsyncWebServerRequest *request){
 	String json = String(control->getSetedDataJSON());

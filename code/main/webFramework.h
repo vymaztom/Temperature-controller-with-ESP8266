@@ -50,7 +50,10 @@ private:
 
 	void handleRequest_jsonWifiNets(AsyncWebServerRequest *request);
 	void handleRequest_WifiNets(AsyncWebServerRequest *request);
-
+	void handleRequest_languageIndex(AsyncWebServerRequest *request);
+	void handleRequest_languageConfig(AsyncWebServerRequest *request);
+	void handleRequest_languageJSON(AsyncWebServerRequest *request);
+	void handleRequest_ChanelNumberJSON(AsyncWebServerRequest *request);
 
 	uint16_t char2uint8_t(char* str);
 };

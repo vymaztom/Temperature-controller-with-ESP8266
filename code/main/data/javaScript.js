@@ -1,6 +1,10 @@
 // send data into server, data must be dictionary
 var a;
 
+var changeLanguage = 0;
+var delayValue = 1000;
+
+
 function getJSON(page=""){
     var ret = "";
     var myArr;
@@ -17,11 +21,9 @@ function getJSON(page=""){
             }
         }
     };
-    if(page == ""){
-        xmlhttp.open("POST", "actions.php", false);
-    }else{
-        xmlhttp.open("POST", String(page), false);
-    }
+
+    xmlhttp.open("GET", String(page), false);
+
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlhttp.send();
 	//console.log(myArr);
@@ -48,7 +50,6 @@ function getSizeOfScrean(){
 	body = doc.getElementsByTagName('body')[0],
     x = win.innerWidth || docElem.clientWidth || body.clientWidth,
     y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
-	console.log(x + ' × ' + y);
 	var ret = {};
 	ret["x"] = x;
 	ret["y"] = y;
@@ -91,12 +92,16 @@ function indexLoop(){
 	document.getElementById("setTemp").value = data[0]["setedtemperature"];
 	document.getElementById("hysterez").innerHTML = String(data[0]["hysterez"]);
 	document.getElementById("setHys").value = data[0]["hysterez"];
-	console.log(data[0]["active"]);
 	if(Number(data[0]["active"]) == 1){
 		document.getElementById("switch").checked = true;
 	}else{
 		document.getElementById("switch").checked = false;
 	}
+	if(changeLanguage){
+		location.reload();
+		changeLanguage = 0;
+	}
+
 }
 
 function addNoteIntoWifiConnections(SSID, RSSI){
@@ -132,4 +137,26 @@ function addNoteIntoWifiConnections(SSID, RSSI){
 
 	one.appendChild(note);
 
+}
+
+var NumberResults = 250;
+
+function getGraph(){
+	var data = getJSON("/ChanelNumberJSON");
+	var one = document.getElementById("graph");
+	if(Number(data[0]["WifiMode"]) == 0){
+		document.getElementById("graphDIV").style.display = "";
+		chanelNumber = Number(data[0]["ChanelNumber"]);
+		var screen = getSizeOfScrean();
+		one.innerHTML = "";
+		var note = document.createElement("iframe");
+		note.setAttribute('width', 450);
+		note.setAttribute('height', 260);
+		note.setAttribute('style', "border: none;");
+		note.setAttribute('src', "https://thingspeak.com/channels/" + Number(chanelNumber) + "/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=" + Number(NumberResults) + "&type=line");
+		one.appendChild(note);
+	}else{
+		one.innerHTML = "";
+		document.getElementById("graphDIV").style.display = "none";
+	}
 }

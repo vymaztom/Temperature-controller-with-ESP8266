@@ -1,8 +1,9 @@
 #include "Controller.h"
 
 
-Controller::Controller(Config* object):oneWire(PIN_DATA),sensors(&oneWire){
+Controller::Controller(Config* object):oneWire(PIN_DATA),sensors(&oneWire),client_logger(){
 	startMillis = millis();
+	startMillis_Logger = millis();
 	config = object;
 	_temperature_last_value = 0;
 	_seted_temperature = 30.0;
@@ -17,6 +18,8 @@ void Controller::begin(){
 
 	// Start up the library
 	sensors.begin();
+
+	ThingSpeak.begin(client_logger);
 
 	// load adrres of DallasTemperature
 	if(sensors.getDeviceCount() > 0){
@@ -46,6 +49,19 @@ void Controller::loop(){
 		startMillis = millis();
 		_temperature_last_value = getTemperatureCelsius();
 		_control();
+	}
+
+
+
+	unsigned long diffrentMillis_Logger = millis() - startMillis_Logger;
+	if(diffrentMillis_Logger > config->getTimerLogger()){
+		startMillis_Logger = millis();
+		int x = ThingSpeak.writeField(config->getMyChanelNumber(), 1, _temperature_last_value, config->getApiKey());
+		if(x == 200){
+			ConsolePrint("IoT Cloud send", "OK");
+		}else{
+			ConsolePrint("IoT Cloud send", "ERROR");
+		}
 	}
 }
 
@@ -111,6 +127,8 @@ void Controller::setSetedHysterez(float value){
 	ConsolePrint("Controller seted hysterez", String(value).c_str());
 	_seted_temperature_hysterez = value;
 }
+
+
 /******************************************************************************
 
 PRIVATE FUNCTIONS
