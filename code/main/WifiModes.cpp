@@ -44,7 +44,7 @@ void WifiModes::loop(){
 	MDNS.update();
 	MDNS.announce();
 	if(digitalRead(PIN_BUTTON) != seted_mode){
-		Serial.println("reset");
+		ConsolePrint("ESP", "reset");
 		ESP.reset();
 	}
 	if(seted_mode == MODE_AP){
@@ -102,6 +102,12 @@ void WifiModes::setStationMode(){
 	IPAddress ip = WiFi.localIP();
 	sprintf(bufIP, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	ConsolePrint("WifiConfig STATION MODE IP", bufIP);
+
+	config->dhcp[0] = ip[0];
+	config->dhcp[1] = ip[1];
+	config->dhcp[2] = ip[2];
+	config->dhcp[3] = ip[3];
+	config->Save_buttons();
 }
 
 void WifiModes::wifiScan(){

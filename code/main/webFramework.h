@@ -41,6 +41,8 @@ private:
 	void handleRequest_wifiSTATION_JSON(AsyncWebServerRequest *request);
 	void handleRequest_save(AsyncWebServerRequest *request);
 	void handleRequest_load(AsyncWebServerRequest *request);
+	void handleRequest_reboot(AsyncWebServerRequest *request);
+
 	void handleRequest_TemperatureData(AsyncWebServerRequest *request);
 	void handleRequest_LabelData(AsyncWebServerRequest *request);
 

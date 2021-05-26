@@ -77,16 +77,18 @@
 		</form>
 	</div>
 	<div class="contend blue">
-		<h3 class="left" >Save Config</h3>
+		<h3 class="left" >%t30%</h3>
 		<form action="/save" method="post">
-			<input type="submit" class="contend green" value="%t27%">
+			<input type="submit" class="contend green" value="%t31%">
 		</form>
-	</div>
-	<div class="contend blue">
-		<h3 class="left" >Save Config</h3>
 		<form action="/load" method="post">
-			<input type="submit" class="contend green" value="Load">
+			<input type="submit" class="contend green" value="%t32%">
 		</form>
+		<form action="/reboot" method="post">
+			<input type="submit" class="contend green" value="%t33%" id="reboot">
+		</form>
+		<p>%t34%</p>
+		<p>%s9%</p>
 	</div>
 
 
@@ -109,16 +111,11 @@
 			document.getElementById("switch").checked = true;
 		}else{
 			document.getElementById("switch").checked = false;
-
 		}
 
 
 		document.getElementById("switch").addEventListener("change", function(){
-			/*
-			sendGET("/setDATA?active=" + String(document.getElementById("switch").checked));
-			console.log("/setDATA?active=" + String(document.getElementById("switch").checked));
-			*/
-			console.log("pres => " + String(document.getElementById("switch").checked));
+			sendGET("/configlanguage?logger=" + String(document.getElementById("switch").checked));
 		});
 
 		document.getElementById("flag_0").addEventListener("click", function(){
@@ -137,6 +134,10 @@
 				location.reload();
 			}, delayValue);
 		});
+		document.getElementById("reboot").addEventListener("click", function(){
+			window.location.href = '/';
+		});
+
 
 	</script>
 

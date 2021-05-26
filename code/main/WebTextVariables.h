@@ -8,13 +8,13 @@ char WebTextVariable[2][40][40] = {
 		"Regulátor teploty",
 		"Regulátor teploty",
 		"AP mód",
-		"nDNS název zařízení",
+		"mDNS název zařízení",
 		"IP adresa zařízení",
 		"Maska sítě", //5
 		"Výchozí brána",
 		"SSID",
 		"Heslo",
-		"Nastavení MQTT",
+		"ThingSpeak nastavení",
 		"Konfiurace Wifi sítí", //10
 		"Číslo kanálu",
 		"Klíč aplikace",
@@ -34,18 +34,23 @@ char WebTextVariable[2][40][40] = {
 		"Kontrolní ledky",
 		"Uložit", //27
 		"Přidej",
-		"Graf"
+		"Graf",
+		"Možnosti zařízení", //30
+		"Uložení konfigurace",
+		"Načtení konfigurace", //32
+		"Restartovat",
+		"Poslední DHCP adresa"
 	},{
 		"Temperature controller",
 		"Temperature controller",
 		"AP mode",
-		"nDNS device name",
+		"mDNS device name",
 		"Device IP address",
 		"Netmask",
 		"Default gateway",
 		"SSID",
 		"Password",
-		"MQTT settings",
+		"ThingSpeak settings",
 		"Wifi connection",
 		"Chanel Number",
 		"Api Key",
@@ -65,7 +70,12 @@ char WebTextVariable[2][40][40] = {
 		"Status",
 		"Save",
 		"Add",
-		"Graph"
+		"Graph",
+		"Device options", //30
+		"Save configuration",
+		"Load configuration", //32
+		"reboot",
+		"Last DHCP address"
 	}
 };
 

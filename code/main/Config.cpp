@@ -1,6 +1,8 @@
 #include "Config.h"
 
-Config::Config(){}
+Config::Config(){
+	selected_sensor = 0;
+}
 
 void Config::begin(){
 	eeprom.begin();
@@ -36,10 +38,10 @@ void Config::begin(){
 	STATION_addConnection("PJTKV", "abeceda1");
 	STATION_addConnection("UPC_2G", "Ab9876543210");
 
-	*/
 	setTimerLogger(600000);
 	setMyChanelNumber(1365234);
 	setApiKey("RR68JA802JYI63K8");
+	*/
 	load();
 
 	/***************************************************************************/
@@ -307,6 +309,9 @@ void Config::save(){
 	eeprom.printPageMemory(PAGE_1);
 	eeprom.printPageMemory(PAGE_2);
 
+	// PAGE 3
+	Save_buttons();
+
 }
 
 // load structures into eeprom
@@ -346,7 +351,32 @@ void Config::load(){
 	Serial.println(STATION_getConnectionCONSLE());
 
 
+	// PAGE 3
+	Load_buttons();
+
 }
+
+void Config::Save_buttons(){
+	uint8_t offset = 0;
+	eeprom.write_ip(PAGE_3, &offset, dhcp);
+	eeprom._eeprom_write(PAGE_3, offset, controllerOnOff);
+	offset++;
+	eeprom._eeprom_write(PAGE_3, offset, loggerOnOff);
+	offset++;
+}
+
+void Config::Load_buttons(){
+	uint8_t offset = 0;
+	uint8_t* one = eeprom.read_ip(PAGE_3, &offset);
+	memcpy(dhcp, one, 4);
+	controllerOnOff = eeprom._eeprom_read(PAGE_3, offset);
+	offset++;
+	loggerOnOff = eeprom._eeprom_read(PAGE_3, offset);
+	offset++;
+}
+
+
+
 
 
 void Config::Print(){
@@ -434,7 +464,7 @@ uint8_t* Config::StringToIP(char* str){
 	}else{
 		ret[4] *= 0;
 	}
-	Serial.println("String to IP" + String(ret[0]) + "." + String(ret[1]) + "." + String(ret[2]) + "." + String(ret[3]));
+	//Serial.println("String to IP" + String(ret[0]) + "." + String(ret[1]) + "." + String(ret[2]) + "." + String(ret[3]));
 	return ret;
 }
 
@@ -447,7 +477,7 @@ char* Config::IPToString(uint8_t* input){
 	ret += String(input[3]) + "\0";
 
 	char* str = (char*)ret.c_str();
-	Serial.println("ip to string" + ret);
+	//Serial.println("ip to string" + ret);
 	memcpy(output, str, strlen(str)+1);
 	return output;
 }

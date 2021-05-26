@@ -39,6 +39,8 @@ String webFramework::processor(const String& var){
 			ret = String(config->getApiKey());
 		}else if(input[1] == '8'){
 			ret = String(config->getTimerLogger()/1000);
+		}else if(input[1] == '9'){
+			ret = String(config->IPToString(config->dhcp));
 		}
 	}
 	return ret;
@@ -128,7 +130,7 @@ void webFramework::begin(){
 
 	server.on("/save", HTTP_ANY, WF(handleRequest_save));
 	server.on("/load", HTTP_ANY, WF(handleRequest_load));
-
+	server.on("/reboot", HTTP_ANY, WF(handleRequest_reboot));
 
 
 	server.on("/jsonWifiNets", HTTP_ANY, WF(handleRequest_jsonWifiNets));
@@ -266,6 +268,15 @@ void webFramework::handleRequest_load(AsyncWebServerRequest *request){
 	config->load();
 	request->redirect("/config");
 }
+
+void webFramework::handleRequest_reboot(AsyncWebServerRequest *request){
+	ConsolePrint("ESP", "reset");
+	ESP.reset();
+	request->redirect("/config");
+}
+
+
+
 /*
 void webFramework::handleRequest_TemperatureData(AsyncWebServerRequest *request){
 	String json = String(control->getTemperatureJSON());
@@ -299,11 +310,13 @@ void webFramework::handleRequest_setDATA(AsyncWebServerRequest *request){
 			}
 			if(strcmp(p->name().c_str(), "active") == 0){
 				if(strcmp(p->value().c_str(), "true") == 0){
-					active = 1;
+					config->controllerOnOff = 1;
 				}else{
-					active = 0;
+					config->controllerOnOff = 0;
 				}
+				config->Save_buttons();
 			}
+
 		}
 	}
 	request->redirect("/index");
@@ -318,6 +331,14 @@ void webFramework::handleRequest_languageConfig(AsyncWebServerRequest *request){
 			if(strcmp(p->name().c_str(), "language") == 0){
 				language = (uint8_t)p->value().toInt();
 			}
+		}
+		if(strcmp(p->name().c_str(), "logger") == 0){
+			if(strcmp(p->value().c_str(), "true") == 0){
+				config->loggerOnOff = 1;
+			}else{
+				config->loggerOnOff = 0;
+			}
+			config->Save_buttons();
 		}
 	}
 	request->redirect("/config");
@@ -344,6 +365,7 @@ void webFramework::handleRequest_languageJSON(AsyncWebServerRequest *request){
 	json += "\"controllerOnOff\":" + String(config->controllerOnOff) + ",";
 	json += "\"loggerOnOff\":" + String(config->loggerOnOff);
 	json += "}]";
+	Serial.println(json);
 	request->send(200, "text/json", json);
 }
 

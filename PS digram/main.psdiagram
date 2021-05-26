@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<flowchartSaveContainer>
+    <flowchart>
+        <mainSegment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="layoutSegment" xmlID="0">
+            <element xsi:type="layoutElement" xmlID="1" parentSegment="0">
+                <startEnd>
+                    <borderColor>0,0,0,255</borderColor>
+                    <shapeUpColor>255,255,255,255</shapeUpColor>
+                    <shapeDownColor>230,230,230,255</shapeDownColor>
+                    <hasShadow>true</hasShadow>
+                    <commandsValid>true</commandsValid>
+                    <value>Začátek</value>
+                </startEnd>
+            </element>
+            <element xsi:type="layoutElement" xmlID="3" parentSegment="0">
+                <process>
+                    <borderColor>0,0,0,255</borderColor>
+                    <shapeUpColor>255,255,255,255</shapeUpColor>
+                    <shapeDownColor>230,230,230,255</shapeDownColor>
+                    <hasShadow>true</hasShadow>
+                    <customValue>inicializace tříd
+Config 
+webFramework
+WifiModes
+Controller</customValue>
+                    <commands>
+                        <entry key="var"></entry>
+                        <entry key="value">setup</entry>
+                    </commands>
+                    <commandsValid>true</commandsValid>
+                    <value>inicializace tříd
+Config 
+webFramework
+WifiModes
+Controller</value>
+                </process>
+            </element>
+            <element xsi:type="layoutElement" xmlID="5" parentSegment="0">
+                <loopStart>
+                    <borderColor>0,0,0,255</borderColor>
+                    <shapeUpColor>255,255,255,255</shapeUpColor>
+                    <shapeDownColor>230,230,230,255</shapeDownColor>
+                    <hasShadow>true</hasShadow>
+                    <customValue>Nekonečná smyčka</customValue>
+                    <defaultValue>loop</defaultValue>
+                    <commands>
+                        <entry key="condition">loop</entry>
+                    </commands>
+                    <commandsValid>true</commandsValid>
+                    <value>Nekonečná smyčka</value>
+                    <overHanged>true</overHanged>
+                </loopStart>
+                <segment xsi:nil="true"/>
+                <segment xsi:type="layoutSegment" xmlID="6" parentElement="5">
+                    <element xsi:type="layoutElement" xmlID="7" parentSegment="6">
+                        <process>
+                            <borderColor>0,0,0,255</borderColor>
+                            <shapeUpColor>255,255,255,255</shapeUpColor>
+                            <shapeDownColor>230,230,230,255</shapeDownColor>
+                            <hasShadow>true</hasShadow>
+                            <customValue>Kontrola
+stavu přepínače
+(přepnutí režimu)</customValue>
+                            <commandsValid>true</commandsValid>
+                            <value>Kontrola
+stavu přepínače
+(přepnutí režimu)</value>
+                        </process>
+                    </element>
+                    <element xsi:type="layoutElement" xmlID="8" parentSegment="6">
+                        <switch>
+                            <borderColor>0,0,0,255</borderColor>
+                            <shapeUpColor>255,255,255,255</shapeUpColor>
+                            <shapeDownColor>230,230,230,255</shapeDownColor>
+                            <hasShadow>true</hasShadow>
+                            <customValue>Teplotní čidlo
+připojeno</customValue>
+                            <commandsValid>true</commandsValid>
+                            <value>Teplotní čidlo
+připojeno</value>
+                        </switch>
+                        <segment xsi:type="layoutSegment" xmlID="9" parentElement="8">
+                            <element xsi:type="layoutElement" xmlID="11" parentSegment="9">
+<process>
+    <borderColor>0,0,0,255</borderColor>
+    <shapeUpColor>255,255,255,255</shapeUpColor>
+    <shapeDownColor>230,230,230,255</shapeDownColor>
+    <hasShadow>true</hasShadow>
+    <customValue>Nová inicializace
+trídy Controller</customValue>
+    <commandsValid>true</commandsValid>
+    <value>Nová inicializace
+trídy Controller</value>
+</process>
+                            </element>
+                            <customDescription>Ne</customDescription>
+                            <description>Ne</description>
+                        </segment>
+                        <segment xsi:type="layoutSegment" xmlID="10" parentElement="8">
+                            <element xsi:type="layoutElement" xmlID="12" parentSegment="10">
+<process>
+    <borderColor>0,0,0,255</borderColor>
+    <shapeUpColor>255,255,255,255</shapeUpColor>
+    <shapeDownColor>230,230,230,255</shapeDownColor>
+    <hasShadow>true</hasShadow>
+    <customValue>Vyhodnocování dat
+pomocí třídy Controller</customValue>
+    <commandsValid>true</commandsValid>
+    <value>Vyhodnocování dat
+pomocí třídy Controller</value>
+</process>
+                            </element>
+                            <customDescription>Ano</customDescription>
+                            <description>Ano</description>
+                        </segment>
+                    </element>
+                </segment>
+            </element>
+            <element xsi:type="layoutElement" xmlID="4" parentSegment="0">
+                <loopEnd>
+                    <borderColor>0,0,0,255</borderColor>
+                    <shapeUpColor>255,255,255,255</shapeUpColor>
+                    <shapeDownColor>230,230,230,255</shapeDownColor>
+                    <hasShadow>true</hasShadow>
+                    <commandsValid>true</commandsValid>
+                    <value></value>
+                </loopEnd>
+            </element>
+            <element xsi:type="layoutElement" xmlID="2" parentSegment="0">
+                <startEnd>
+                    <borderColor>0,0,0,255</borderColor>
+                    <shapeUpColor>255,255,255,255</shapeUpColor>
+                    <shapeDownColor>230,230,230,255</shapeDownColor>
+                    <hasShadow>true</hasShadow>
+                    <commandsValid>true</commandsValid>
+                    <value>Konec</value>
+                </startEnd>
+            </element>
+        </mainSegment>
+    </flowchart>
+</flowchartSaveContainer>

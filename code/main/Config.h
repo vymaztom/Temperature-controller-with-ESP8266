@@ -144,10 +144,20 @@ public:
 
 	uint8_t getWifiMode();
 
+	void Save_buttons();
+
+	void Load_buttons();
+
+	uint8_t* StringToIP(char* str);
+
+	char* IPToString(uint8_t* input);
+
 	uint8_t WifiNets_index;
 	WiFiNote_t WifiNets[MAX_SCAN];
 	uint8_t controllerOnOff;
 	uint8_t loggerOnOff;
+	uint8_t dhcp[4];
+	uint8_t selected_sensor;
 
 	EEPROM_24LC16B eeprom;
 	LList stationValues;
@@ -180,9 +190,6 @@ private:
 	// valide and decode string IP to array of uint8_t
 	// retunr 5 x uint8_t
 	// {(IP_1_byte),(IP_2_byte),(IP_3_byte),(IP_4_byte),(valide 1 or 0 for invalide)}
-	uint8_t* StringToIP(char* str);
-
-	char* IPToString(uint8_t* input);
 
 };
 

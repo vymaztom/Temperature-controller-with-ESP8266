@@ -7,6 +7,9 @@
 #include <ESP8266WiFi.h>
 #include <DallasTemperature.h>
 #include <ThingSpeak.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
 #include "ProjectConfig.h"
 #include "Config.h"
 #include "Buffer.h"
@@ -57,6 +60,7 @@ private:
 	OneWire oneWire;
 	DallasTemperature sensors;
 	DeviceAddress Thermometer;
+	DHT dht;
 
 	// timers
 	unsigned long startMillis;
